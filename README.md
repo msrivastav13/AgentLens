@@ -33,7 +33,7 @@ An example trace is included in `example/trace.json`.
 
 ## Screenshot
 
-![AgentLens](https://github.com/user-attachments/assets/placeholder)
+![AgentLens](images/output.png)
 
 ## License
 
