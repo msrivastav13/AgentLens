@@ -1,17 +1,21 @@
 # AgentLens
 
-A zero-dependency, single-file visualizer for **Agentforce** agent plan execution traces. Paste or drop a `PlanSuccessResponse` JSON and instantly see:
+A zero-dependency, single-file visualizer for **Agentforce** agent traces.
+
+**Try it now:** <https://msrivastav13.github.io/AgentLens/>
+
+Load a plan response from the **Agentforce DX** extension and instantly see:
 
 - **Topic Graph** — directed graph of agent topic handoffs with transition counts
-- **Per-topic FSM** — induced finite-state machine (orchestration vs tool-execution nodes) with step-through playback
+- **State Machine Playback** — step through each topic's orchestration and tool-execution flow with full LLM detail
 - **Trace Stream** — filterable timeline of every plan step: LLM calls, tool executions, variable updates, reasoning iterations, and more
 - **Graph Analysis** — degree distribution, SCC/WCC decomposition, betweenness centrality, diameter, and prose insights
 
 ## Quick Start
 
 1. Open `index.html` in any browser (works with `file://`, no server required).
-2. Click **Paste JSON** or **Upload** and provide a `PlanSuccessResponse` JSON.
-3. Click a topic node to explore its FSM and trace timeline.
+2. Click **Paste JSON** or **Upload** and provide the plan response JSON from the **Agentforce DX** extension.
+3. Click a topic node to explore its state machine and trace timeline.
 
 An example trace is included in `example/trace.json`.
 
