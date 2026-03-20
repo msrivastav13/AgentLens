@@ -1,0 +1,2017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; form-action 'none'; base-uri 'none';">
+<meta name="referrer" content="no-referrer">
+<title>Topic Graph &amp; FSM Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%}
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#242836;--border:#2e3348;
+  --text:#e2e4ed;--text-dim:#8b8fa3;--text-bright:#ffffff;
+  --blue:#4e8cff;--blue-bg:rgba(78,140,255,.12);--blue-border:rgba(78,140,255,.3);
+  --green:#34d399;--green-bg:rgba(52,211,153,.12);--green-border:rgba(52,211,153,.3);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,.12);--purple-border:rgba(167,139,250,.3);
+  --orange:#fb923c;--orange-bg:rgba(251,146,60,.12);--orange-border:rgba(251,146,60,.3);
+  --gray:#6b7280;--teal:#2dd4bf;--cyan:#22d3ee;--yellow:#fbbf24;--red:#f87171;
+  --radius:10px;--radius-sm:6px;
+  --font-mono:'SF Mono','Cascadia Code','Fira Code',Consolas,monospace;
+}
+.light{
+  --bg:#f5f6fa;--surface:#ffffff;--surface2:#f0f1f5;--border:#d4d7e3;
+  --text:#1e2030;--text-dim:#6b7084;--text-bright:#000000;
+  --blue:#2563eb;--blue-bg:rgba(37,99,235,.08);--blue-border:rgba(37,99,235,.25);
+  --green:#059669;--green-bg:rgba(5,150,105,.08);--green-border:rgba(5,150,105,.25);
+  --purple:#7c3aed;--purple-bg:rgba(124,58,237,.08);--purple-border:rgba(124,58,237,.25);
+  --orange:#ea580c;--orange-bg:rgba(234,88,12,.08);--orange-border:rgba(234,88,12,.25);
+  --gray:#6b7280;--teal:#0d9488;--cyan:#0891b2;--yellow:#d97706;--red:#dc2626;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh;
+  display:flex;flex-direction:column}
+body.app-viz{height:100%;max-height:100%;overflow:hidden;min-height:0}
+@media(max-width:1024px){
+  body.app-viz{height:auto;min-height:100%;max-height:none;overflow-x:hidden;overflow-y:auto}
+}
+.app-header{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
+.app-header h1{font-size:17px;font-weight:700;color:var(--text-bright)}
+.header-meta{display:flex;gap:12px;flex-wrap:wrap;flex:1}
+.meta-chip{font-size:11px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:20px;padding:4px 10px;color:var(--text-dim)}
+.meta-chip strong{color:var(--text);font-weight:600}
+.header-actions{display:flex;gap:8px;align-items:center}
+.btn{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text);padding:6px 12px;font-size:12px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+#mainViz:not(.hidden){display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+.layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,1fr);gap:14px;max-width:1680px;margin:0 auto;padding:14px 16px;flex:1;min-height:0;overflow:hidden;align-items:stretch}
+@media(max-width:1024px){.layout{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.panel-h{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;
+  color:var(--text-bright);text-transform:uppercase;letter-spacing:.5px}
+.graph-wrap{flex:1;width:100%;min-height:260px;background:var(--surface2);position:relative;touch-action:none}
+.graph-wrap#topicGraph{
+  flex:1 1 auto;min-height:min(28vh,280px);max-height:min(42vh,420px);
+  display:flex;align-items:center;justify-content:center;min-width:0}
+.graph-wrap#topicGraph svg{display:block;width:100%;height:auto;max-height:100%;cursor:default;flex-shrink:0}
+.graph-wrap svg{display:block;width:100%;height:100%;cursor:default}
+.panel--fsm{min-height:0;align-self:stretch;width:100%;display:flex;flex-direction:column}
+.graph-wrap#fsmWrap{flex:1 1 auto;min-height:0;height:auto!important;max-height:none;display:flex;flex-direction:column;overflow:hidden}
+.fsm-panel{display:flex;flex-direction:column;flex:1;min-height:0;height:100%;overflow:hidden}
+.fsm-playbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.fsm-playbar .fsm-playbar-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);width:100%;margin-bottom:2px}
+.fsm-playbar input[type=range]{flex:1;min-width:120px;accent-color:var(--cyan)}
+.fsm-playbar select,.fsm-playbar .btn-fsm{font-size:11px;padding:5px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer}
+.fsm-playbar .btn-fsm{font-weight:600}
+.fsm-playbar .btn-fsm:hover{border-color:var(--blue);color:var(--blue)}
+.fsm-macro-slot{flex:0 0 auto;height:min(30vh,280px);min-height:180px;max-height:min(34vh,320px);background:var(--surface2);border-bottom:1px solid var(--border);position:relative}
+.fsm-macro-slot svg{display:block;width:100%;height:100%}
+.fsm-timeline{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;background:var(--surface2);overflow:hidden}
+.fsm-timeline-h{padding:8px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);border-bottom:1px solid var(--border)}
+.fsm-event-feed{flex:1;overflow-y:auto;padding:10px 12px 14px;display:flex;flex-direction:column;gap:10px}
+.fsm-event-card{border-radius:var(--radius-sm);padding:10px 12px;font-size:11px;line-height:1.45;border:1px solid var(--border);background:var(--surface);box-shadow:0 1px 0 rgba(0,0,0,.06)}
+.fsm-event-card.fsm-anim{animation:fsmCardIn .4s cubic-bezier(.22,1,.36,1) both}
+.fsm-event-card.fsm-past{opacity:.42;filter:grayscale(.15)}
+.fsm-event-card .fsm-ev-title{font-weight:700;color:var(--text-bright);font-size:12px;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fsm-event-card .fsm-ev-badge{font-size:9px;font-weight:700;letter-spacing:.04em;padding:2px 7px;border-radius:999px;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);max-width:min(200px,46vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fsm-event-card .fsm-ev-badge.fsm-ev-badge-macro{text-transform:uppercase}
+.fsm-event-card .fsm-ev-sub{font-size:10px;color:var(--text-dim);margin-bottom:6px;font-family:var(--font-mono)}
+.fsm-event-card .fsm-ev-step{font-size:10px;color:var(--cyan);font-family:var(--font-mono)}
+.fsm-event-card.var{border-color:var(--purple-border);background:var(--purple-bg)}
+.fsm-event-card.var .fsm-ev-badge{color:var(--purple);border-color:var(--purple-border);background:rgba(167,139,250,.08)}
+.fsm-event-card.tool{border-color:rgba(45,212,191,.35);background:rgba(45,212,191,.08)}
+.fsm-event-card.tool .fsm-ev-badge{color:var(--teal);border-color:rgba(45,212,191,.35)}
+.fsm-event-card.action{border-color:var(--orange-border);background:var(--orange-bg)}
+.fsm-event-card.action .fsm-ev-badge{color:var(--orange);border-color:var(--orange-border)}
+.fsm-event-card.exec{border-color:var(--green-border);background:var(--green-bg)}
+.fsm-event-card.exec .fsm-ev-badge{color:var(--green);border-color:var(--green-border)}
+.fsm-event-card.entry .fsm-ev-badge{color:var(--blue);border-color:var(--blue-border)}
+.fsm-event-card.user{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.08)}
+.fsm-event-card.response{border-color:rgba(34,211,238,.3);background:rgba(34,211,238,.06)}
+.fsm-var-ul{margin:0;padding-left:16px;color:var(--text)}
+.fsm-var-ul li{margin:6px 0}
+.fsm-var-ul code{font-family:var(--font-mono);font-size:10px;color:var(--purple)}
+.fsm-kv{font-size:10px;color:var(--text-dim);margin:2px 0 0;font-family:var(--font-mono);word-break:break-word}
+.fsm-chips{display:flex;flex-wrap:wrap;gap:6px}
+.fsm-chip{font-size:10px;padding:3px 8px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);font-family:var(--font-mono)}
+.fsm-chip-sent{border-color:rgba(34,211,238,.35);color:var(--cyan)}
+.fsm-pre{margin:6px 0 0;font-size:10px;font-family:var(--font-mono);white-space:pre-wrap;word-break:break-word;max-height:120px;overflow:auto;background:var(--surface2);padding:8px;border-radius:var(--radius-sm);border:1px solid var(--border)}
+.fsm-llm-section{margin-top:10px}
+.fsm-llm-section:first-child{margin-top:0}
+.fsm-llm-h{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.55px;color:var(--text-dim);margin-bottom:5px}
+.fsm-msg-bubble{margin:6px 0;padding:7px 10px;border-radius:var(--radius-sm);font-size:10px;line-height:1.45;max-height:180px;overflow-y:auto;border:1px solid var(--border)}
+.fsm-msg-role{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;opacity:.78}
+.fsm-msg-system{background:var(--purple-bg);border-color:var(--purple-border)}
+.fsm-msg-user{background:var(--blue-bg);border-color:var(--blue-border)}
+.fsm-msg-assistant{background:var(--green-bg);border-color:var(--green-border)}
+.fsm-msg-tool{background:rgba(45,212,191,.1);border-color:rgba(45,212,191,.35)}
+.light .fsm-msg-tool{background:rgba(13,148,136,.08);border-color:rgba(13,148,136,.25)}
+.fsm-msg-body{white-space:pre-wrap;word-break:break-word;font-family:var(--font-mono)}
+.light .fsm-event-card.exec{background:rgba(5,150,105,.06)}
+.light .fsm-event-card.var{background:rgba(124,58,237,.06)}
+@keyframes fsmCardIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+.svg-graph.fsm .fsm-node.dim circle{opacity:.32}
+.svg-graph.fsm .fsm-node.active circle{opacity:1;stroke:var(--cyan)!important;stroke-width:3px;filter:drop-shadow(0 0 12px rgba(34,211,238,.45))}
+.light .svg-graph.fsm .fsm-node.active circle{filter:drop-shadow(0 0 10px rgba(8,145,178,.4))}
+.svg-graph .edge{fill:none;stroke:var(--text);stroke-width:2.2;opacity:.5;stroke-linecap:round;stroke-linejoin:round}
+.svg-graph{overflow:visible}
+.svg-graph .edge-label{font-size:9px;fill:var(--text);font-family:var(--font-mono);pointer-events:none;font-weight:600}
+.svg-graph .topic-node{cursor:pointer}
+.svg-graph .topic-node circle{fill:var(--bg);stroke:var(--blue);stroke-width:2;transition:stroke-width .15s,filter .15s,stroke .15s}
+.svg-graph .topic-node.selected circle{stroke-width:2.8;filter:brightness(1.06)}
+.svg-graph .topic-node text{font-size:12px;fill:var(--text);font-weight:600;font-family:system-ui,sans-serif;pointer-events:none;text-anchor:middle}
+.svg-graph.fsm .fsm-node circle{fill:var(--bg);stroke:var(--purple);stroke-width:2;transition:stroke .25s,stroke-width .25s,opacity .25s,filter .25s}
+.svg-graph.fsm .fsm-node.fsm-node--tool circle{stroke:var(--teal)}
+.svg-graph.fsm .fsm-node-label{fill:var(--text);font-weight:600;font-family:system-ui,sans-serif;pointer-events:none;text-anchor:middle}
+.light .svg-graph.fsm .fsm-node.fsm-node--tool circle{stroke:var(--teal)}
+.panel-note{padding:10px 14px;font-size:12px;color:var(--text-dim);border-top:1px solid var(--border)}
+.metrics-card{flex-shrink:0;margin:0 16px 16px;padding:0;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);font-size:12px;overflow:hidden}
+.metrics-details>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;
+  padding:10px 14px;user-select:none}
+.metrics-details>summary::-webkit-details-marker{display:none}
+.metrics-details>summary::after{content:'▸';font-size:10px;color:var(--text-dim);margin-left:8px;transition:transform .15s;flex-shrink:0}
+.metrics-details[open]>summary::after{transform:rotate(90deg)}
+.metrics-details>summary:hover{background:rgba(78,140,255,.06)}
+.exec-stats-strip{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:11px;color:var(--text-dim);flex:1;min-width:0}
+.exec-stats-strip b{color:var(--text);font-weight:600}
+.metrics-summary-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.55px;color:var(--text-dim);flex-shrink:0}
+.metrics-details-inner{padding:0 14px 14px}
+.metrics-card h3{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:8px}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.metric-val{font-family:var(--font-mono);color:var(--cyan);font-weight:600}
+.metrics-prose{margin-top:10px;color:var(--text);line-height:1.65}
+.metrics-prose p{margin-top:6px}
+.deg-table{width:100%;font-size:11px;border-collapse:collapse;margin-top:8px}
+.deg-table th,.deg-table td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--border)}
+.deg-table th{color:var(--text-dim);font-weight:600}
+.viz-toolbar{background:var(--surface);border:1px solid var(--border);padding:8px 16px;margin:0 16px 8px;border-radius:var(--radius-sm);
+  display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.viz-toolbar .viz-toolbar-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);width:100%}
+.viz-toolbar label{font-size:11px;color:var(--text);display:inline-flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap}
+.viz-toolbar input[type=checkbox]{accent-color:var(--blue);flex-shrink:0}
+
+#mainEmpty:not(.hidden){flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:min(560px,calc(100vh - 56px))}
+.empty-state{text-align:center;padding:48px 24px;color:var(--text-dim)}
+.empty-state h2{color:var(--text-bright);margin-bottom:8px;font-size:20px}
+.drop-zone{max-width:560px;margin:16px auto;border:2px dashed var(--border);border-radius:var(--radius);
+  padding:32px;cursor:pointer}
+.drop-zone:hover{border-color:var(--blue);background:var(--blue-bg)}
+.btn-large{padding:10px 22px;font-size:13px;font-weight:600;border-radius:var(--radius);cursor:pointer;
+  border:1px solid var(--blue);background:var(--blue);color:#fff;margin:4px}
+.upload-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;
+  align-items:center;justify-content:center}
+.upload-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;width:90%;max-width:640px}
+.upload-modal textarea{width:100%;height:240px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);font-family:var(--font-mono);font-size:11px;padding:10px}
+.btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.btn-primary{background:var(--blue);color:#fff;border:none;padding:8px 18px;border-radius:var(--radius-sm);
+  font-weight:600;cursor:pointer}
+.hidden{display:none}
+.error-toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(248,113,113,.15);
+  border:1px solid rgba(248,113,113,.4);color:var(--red);padding:10px 18px;border-radius:var(--radius);z-index:300}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>Topic Graph &amp; per-topic FSM</h1>
+  <div class="header-meta" id="headerMeta"></div>
+  <div class="header-actions">
+    <button class="btn" id="btnTheme">Light</button>
+    <button class="btn" id="btnLoad">Load JSON</button>
+    <button class="btn hidden" id="btnClear">Clear</button>
+  </div>
+</div>
+
+<div id="mainEmpty" class="empty-state">
+  <h2>Load a PlanSuccessResponse</h2>
+  <p>Topic handoffs become directed edges. Click a topic to see the LLM/orchestration FSM induced by the trace.</p>
+  <p style="font-size:12px;max-width:520px;margin:12px auto 0">Graphs use inline SVG only (no external graph library), so <code>file://</code> and local servers both work.</p>
+  <button class="btn-large" id="btnPaste">Paste JSON</button>
+  <label class="btn-large" style="display:inline-block;background:var(--surface2);color:var(--text);border-color:var(--border)">
+    Upload <input type="file" accept=".json,application/json" id="fileInput" class="hidden">
+  </label>
+  <div class="drop-zone" id="dropZone"><strong>Drop JSON here</strong></div>
+</div>
+
+<div id="mainViz" class="hidden">
+  <div class="viz-toolbar" id="vizToolbar">
+    <span class="viz-toolbar-title">FSM trace detail (checked = show)</span>
+    <label title="VariableUpdateStep"><input type="checkbox" id="chkVarUpdates" /> Variable updates</label>
+    <label title="Prep / planner / reasoning steps"><input type="checkbox" id="chkReasoning" /> Reasoning &amp; prep</label>
+    <label title="NodeEntryStateStep"><input type="checkbox" id="chkNodeEntry" /> Node entry</label>
+    <label title="EnabledToolsStep"><input type="checkbox" id="chkEnabledTools" /> Enabled tools</label>
+    <label title="Names starting with __"><input type="checkbox" id="chkUnderscoreVars" /> Show <code>__</code> variables</label>
+    <label title="Internal script variables"><input type="checkbox" id="chkAgentScriptVars" /> Show AgentScriptInternal_*</label>
+    <label title="Full prompts and messages"><input type="checkbox" id="chkFullLlm" checked /> Full LLM bodies</label>
+  </div>
+  <div class="metrics-card" id="metricsCard"></div>
+  <div class="layout">
+    <div class="panel">
+      <div class="panel-h">Topic graph (transitions)</div>
+      <div class="graph-wrap" id="topicGraph"></div>
+      <div class="panel-note">Topics (normalized ids) on a ring; light arrows are TransitionStep handoffs. Edge badge only when a pair repeats.</div>
+    </div>
+    <div class="panel panel--fsm">
+      <div class="panel-h">Induced FSM — <span id="fsmTopicLabel">select a topic</span></div>
+      <div class="graph-wrap" id="fsmWrap"></div>
+      <div class="panel-note">Scrub the trace to highlight states. Orchestration (purple) vs executed tools (teal). Each tool name is its own state, not a single “Function” node.</div>
+    </div>
+  </div>
+</div>
+
+<div class="upload-overlay hidden" id="uploadOverlay">
+  <div class="upload-modal">
+    <h2 style="font-size:15px;margin-bottom:10px;color:var(--text-bright)">Paste Plan JSON</h2>
+    <textarea id="jsonInput" placeholder='{ "type": "PlanSuccessResponse", "plan": [...] }'></textarea>
+    <div class="btn-row">
+      <button class="btn" id="btnCancel">Cancel</button>
+      <button class="btn-primary" id="btnParse">Visualize</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LS_FILTERS = 'afViz2.filters';
+const LS_METRICS_OPEN = 'afViz2.metricsOpen';
+
+let currentData = null;
+let analysis = null;
+let vizParsed = null;
+let selectedTopicId = null;
+let fsmPlayback = { events: [], rawEvents: [], idx: -1, lastFeedIdx: -1, nodeMap: null };
+let fsmKeyNavHandler = null;
+
+function detachFsmKeyboardNav() {
+  if (fsmKeyNavHandler) {
+    window.removeEventListener('keydown', fsmKeyNavHandler, true);
+    fsmKeyNavHandler = null;
+  }
+}
+
+function attachFsmKeyboardNav() {
+  detachFsmKeyboardNav();
+  fsmKeyNavHandler = ev => {
+    if (!selectedTopicId || !fsmPlayback.events || fsmPlayback.events.length === 0) return;
+    const tag = ev.target && ev.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || ev.target.isContentEditable) return;
+    if (ev.key === 'ArrowLeft' || ev.key === 'k' || ev.key === 'K') {
+      ev.preventDefault();
+      stepFsmPrev();
+    } else if (ev.key === 'ArrowRight' || ev.key === 'j' || ev.key === 'J') {
+      ev.preventDefault();
+      stepFsmNext();
+    }
+  };
+  window.addEventListener('keydown', fsmKeyNavHandler, true);
+}
+
+const timelineFilterPrefs = {
+  varUpdates: false,
+  reasoning: false,
+  nodeEntry: false,
+  enabledTools: false,
+  showUnderscoreVars: false,
+  showAgentScriptVars: false,
+  fullLlm: true,
+};
+
+function loadTimelineFilterPrefs() {
+  try {
+    const s = localStorage.getItem(LS_FILTERS);
+    if (!s) return;
+    const parsed = JSON.parse(s);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return;
+    const allowed = Object.keys(timelineFilterPrefs);
+    for (const key of allowed) {
+      if (Object.prototype.hasOwnProperty.call(parsed, key)) {
+        timelineFilterPrefs[key] = !!parsed[key];
+      }
+    }
+  } catch (_) {}
+}
+
+function saveTimelineFilterPrefs() {
+  try {
+    localStorage.setItem(LS_FILTERS, JSON.stringify(timelineFilterPrefs));
+  } catch (_) {}
+}
+
+function syncFilterUiFromPrefs() {
+  const m = {
+    chkVarUpdates: 'varUpdates',
+    chkReasoning: 'reasoning',
+    chkNodeEntry: 'nodeEntry',
+    chkEnabledTools: 'enabledTools',
+    chkUnderscoreVars: 'showUnderscoreVars',
+    chkAgentScriptVars: 'showAgentScriptVars',
+    chkFullLlm: 'fullLlm',
+  };
+  for (const [id, key] of Object.entries(m)) {
+    const el = document.getElementById(id);
+    if (el) el.checked = !!timelineFilterPrefs[key];
+  }
+}
+
+function readFilterUiToPrefs() {
+  timelineFilterPrefs.varUpdates = !!document.getElementById('chkVarUpdates')?.checked;
+  timelineFilterPrefs.reasoning = !!document.getElementById('chkReasoning')?.checked;
+  timelineFilterPrefs.nodeEntry = !!document.getElementById('chkNodeEntry')?.checked;
+  timelineFilterPrefs.enabledTools = !!document.getElementById('chkEnabledTools')?.checked;
+  timelineFilterPrefs.showUnderscoreVars = !!document.getElementById('chkUnderscoreVars')?.checked;
+  timelineFilterPrefs.showAgentScriptVars = !!document.getElementById('chkAgentScriptVars')?.checked;
+  timelineFilterPrefs.fullLlm = !!document.getElementById('chkFullLlm')?.checked;
+}
+
+function bodyCacheSig() {
+  return [timelineFilterPrefs.fullLlm, timelineFilterPrefs.showUnderscoreVars, timelineFilterPrefs.showAgentScriptVars].join(',');
+}
+
+function stepDurationMs(step) {
+  const a = step.startExecutionTime;
+  const b = step.endExecutionTime;
+  if (a == null || b == null) return 0;
+  const d = b - a;
+  return d > 0 ? d : 0;
+}
+
+function withStepDuration(subtitle, step) {
+  const d = stepDurationMs(step);
+  if (!d) return subtitle || '';
+  const bit = `${d}ms`;
+  if (!subtitle) return bit;
+  return subtitle.includes(bit) ? subtitle : `${subtitle} · ${bit}`;
+}
+
+function computePlanExecutionStats(plan) {
+  const empty = { steps: 0, llm: 0, fn: 0, transition: 0, wall: 0 };
+  if (!plan || !plan.length) return empty;
+  let llm = 0;
+  let fn = 0;
+  let transition = 0;
+  for (const s of plan) {
+    if (s.type === 'LLMStep') llm++;
+    if (s.type === 'FunctionStep') fn++;
+    if (s.type === 'TransitionStep') transition++;
+  }
+  const wall =
+    plan.length > 1
+      ? (plan[plan.length - 1].endExecutionTime || 0) - (plan[0].startExecutionTime || 0)
+      : stepDurationMs(plan[0]) || 0;
+  return { steps: plan.length, llm, fn, transition, wall };
+}
+
+function filterVariableUpdates(updates, prefs) {
+  return updates.filter(u => {
+    const n = String(u.variable_name || '');
+    if (!prefs.showUnderscoreVars && n.startsWith('__')) return false;
+    if (!prefs.showAgentScriptVars && n.startsWith('AgentScriptInternal_')) return false;
+    return true;
+  });
+}
+
+function countVisibleVarUpdates(step, prefs) {
+  const updates = step.data?.variable_updates || [];
+  if (!updates.length) return 0;
+  return filterVariableUpdates(updates, prefs).length;
+}
+
+function timelineEventMatchesFilters(ev, plan, prefs) {
+  const k = ev.kind;
+  if (k === 'variable') {
+    if (!prefs.varUpdates) return false;
+    const step = plan[ev.stepIndex];
+    const all = step.data?.variable_updates || [];
+    if (!all.length) return true;
+    return countVisibleVarUpdates(step, prefs) > 0;
+  }
+  if (k === 'action' || k === 'response') return !!prefs.reasoning;
+  if (k === 'entry') return !!prefs.nodeEntry;
+  if (k === 'enabled') return !!prefs.enabledTools;
+  return true;
+}
+
+function applyTimelineFilters(plan, rawEvents, prefs) {
+  return rawEvents.filter(ev => timelineEventMatchesFilters(ev, plan, prefs));
+}
+
+function esc(s) {
+  if (s == null) return '';
+  const d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function agentKey(name) {
+  if (!name) return 'none';
+  return String(name).toLowerCase().replace(/\s+/g, '_');
+}
+
+function getAgentForStep(step, prevAgent) {
+  const d = step.data || {};
+  if (step.type === 'LLMStep' || step.type === 'EnabledToolsStep') return agentKey(d.agent_name);
+  if (step.type === 'NodeEntryStateStep' || step.type === 'BeforeReasoningIterationStep' || step.type === 'AfterReasoningStep')
+    return agentKey(d.agent_name);
+  if (step.type === 'TransitionStep') return agentKey(d.from_agent);
+  if (step.type === 'FunctionStep') return prevAgent;
+  if (step.type === 'VariableUpdateStep') return prevAgent;
+  return prevAgent || 'none';
+}
+
+function recordDisplay(map, id, raw) {
+  if (!id || id === 'none' || !raw) return;
+  const s = String(raw).trim();
+  if (!s) return;
+  if (!map[id] || s.length > map[id].length) map[id] = s;
+}
+
+/** Induced FSM states for orchestration (not per-tool names). */
+const FSM_BUILTIN_MACRO_IDS = new Set(['Entry', 'Prep', 'LLM', 'Response', 'UserInput', 'Function']);
+const FSM_MACRO_RING_ORDER = ['Entry', 'UserInput', 'Prep', 'LLM', 'Response', 'Function'];
+
+function functionStepMacroId(step) {
+  const fn = step.function;
+  const raw = fn && fn.name != null ? String(fn.name).trim() : '';
+  if (!raw) return 'Function';
+  if (FSM_BUILTIN_MACRO_IDS.has(raw)) return `${raw} ·tool`;
+  return raw;
+}
+
+function stepToMacro(step) {
+  const t = step.type;
+  if (t === 'TransitionStep') return null;
+  if (t === 'NodeEntryStateStep') return 'Entry';
+  if (t === 'VariableUpdateStep' || t === 'BeforeReasoningIterationStep' || t === 'AfterReasoningStep' || t === 'EnabledToolsStep')
+    return 'Prep';
+  if (t === 'LLMStep') return 'LLM';
+  if (t === 'FunctionStep') return functionStepMacroId(step);
+  if (t === 'UserInputStep') return 'UserInput';
+  if (t === 'PlannerResponseStep' || t === 'ReasoningStep') return 'Response';
+  return null;
+}
+
+function emptyTopicDetails() {
+  return {
+    variableNames: new Set(),
+    variableUpdates: [],
+    enabledTools: new Set(),
+    toolsSent: new Set(),
+    toolsInvoked: new Set(),
+    toolsExecuted: new Set(),
+    toolInvocations: [],
+    functionsExecuted: [],
+    promptNames: new Set(),
+    beforeReasoningActions: new Set(),
+  };
+}
+
+function ensureTopicDetails(map, topic) {
+  if (!topic || topic === 'none') return null;
+  if (!map[topic]) map[topic] = emptyTopicDetails();
+  return map[topic];
+}
+
+function truncateJSON(obj, n) {
+  try {
+    const s = typeof obj === 'string' ? obj : JSON.stringify(obj);
+    return s.length > n ? s.slice(0, n - 1) + '…' : s;
+  } catch {
+    return String(obj).slice(0, n);
+  }
+}
+
+function parsePromptContentToMessages(str) {
+  if (!str || typeof str !== 'string') return [];
+  try {
+    const arr = JSON.parse(str);
+    if (!Array.isArray(arr)) return [];
+    return arr.map(item => {
+      const role = item.role || 'unknown';
+      let content = '';
+      if (item.blocks && Array.isArray(item.blocks)) {
+        content = item.blocks.map(b => (b && b.text != null ? String(b.text) : '')).join('\n');
+      } else if (typeof item.content === 'string') {
+        content = item.content;
+      }
+      return { role, content };
+    });
+  } catch {
+    return [];
+  }
+}
+
+function normalizeLlmMessages(step) {
+  const d = step.data || {};
+  let msgs = step.messages_sent;
+  if (!msgs || !msgs.length) msgs = parsePromptContentToMessages(d.prompt_content);
+  return Array.isArray(msgs) ? msgs : [];
+}
+
+function splitLlmMessages(msgs) {
+  const system = [];
+  const thread = [];
+  for (const m of msgs) {
+    const role = (m && m.role) || 'unknown';
+    const content = m.content == null ? '' : String(m.content);
+    if (role === 'system') system.push({ role, content });
+    else thread.push({ role, content });
+  }
+  return { system, thread };
+}
+
+function fsmLlmMessageBubble(role, content) {
+  const r = role === 'tool' ? 'tool' : role === 'user' ? 'user' : role === 'assistant' ? 'assistant' : 'system';
+  const cls = 'fsm-msg-bubble fsm-msg-' + r;
+  const trimmed = (content || '').trim();
+  let body;
+  if (trimmed) body = esc(content);
+  else if (role === 'assistant')
+    body = '<span style="opacity:.75;font-style:italic">(no text — likely tool call)</span>';
+  else body = '<span style="opacity:.65">(empty)</span>';
+  return `<div class="${cls}"><div class="fsm-msg-role">${esc(role)}</div><div class="fsm-msg-body">${body}</div></div>`;
+}
+
+function formatFsmLlmStepBody(step) {
+  const msgs = normalizeLlmMessages(step);
+  const { system, thread } = splitLlmMessages(msgs);
+  let html = '';
+
+  html += '<div class="fsm-llm-section"><div class="fsm-llm-h">Tools available to the model</div>';
+  const tools = step.tools_sent || [];
+  html +=
+    tools.length > 0
+      ? `<div class="fsm-chips">${tools.map(x => `<span class="fsm-chip fsm-chip-sent">${esc(String(x))}</span>`).join(' ')}</div>`
+      : '<div class="fsm-kv">—</div>';
+  html += '</div>';
+
+  html += '<div class="fsm-llm-section"><div class="fsm-llm-h">System prompt</div>';
+  if (!system.length) html += '<div class="fsm-kv">—</div>';
+  else {
+    system.forEach((m, i) => {
+      if (system.length > 1)
+        html += `<div class="fsm-kv" style="margin-bottom:4px">Part ${i + 1} of ${system.length}</div>`;
+      html += `<pre class="fsm-pre" style="max-height:160px">${esc(m.content)}</pre>`;
+    });
+  }
+  html += '</div>';
+
+  html += '<div class="fsm-llm-section"><div class="fsm-llm-h">Messages sent to the model</div>';
+  if (!thread.length) html += '<div class="fsm-kv">—</div>';
+  else html += thread.map(m => fsmLlmMessageBubble(m.role, m.content)).join('');
+  html += '</div>';
+
+  html += '<div class="fsm-llm-section"><div class="fsm-llm-h">Model output</div>';
+  const resp = step.response_messages || [];
+  if (!resp.length) html += '<div class="fsm-kv">—</div>';
+  else {
+    html += resp
+      .map(m => {
+        const inv = m.tool_invocation;
+        if (inv && inv.name) {
+          return `<pre class="fsm-pre" style="max-height:100px"><b>Tool call</b> ${esc(String(inv.name))}(${esc(truncateJSON(inv.arguments, 600))})</pre>`;
+        }
+        return fsmLlmMessageBubble('assistant', m.content || '');
+      })
+      .join('');
+  }
+  html += '</div>';
+
+  return html;
+}
+
+function formatFsmLlmStepBodyCompact(step) {
+  const d = step.data || {};
+  const lat = d.execution_latency != null ? `${esc(String(d.execution_latency))} ms` : '';
+  const parts = [d.agent_name && esc(String(d.agent_name)), d.prompt_name && esc(String(d.prompt_name)), lat].filter(Boolean);
+  let html = '<div class="fsm-llm-section"><div class="fsm-llm-h">Tools available to the model</div>';
+  const tools = step.tools_sent || [];
+  html +=
+    tools.length > 0
+      ? `<div class="fsm-chips">${tools.map(x => `<span class="fsm-chip fsm-chip-sent">${esc(String(x))}</span>`).join(' ')}</div>`
+      : '<div class="fsm-kv">—</div>';
+  html += `</div><div class="fsm-kv" style="margin-top:8px">${parts.join(' · ') || '—'}</div>`;
+  html += '<div class="fsm-llm-section" style="margin-top:10px"><div class="fsm-llm-h">Model output (compact)</div>';
+  const resp = step.response_messages || [];
+  if (!resp.length) html += '<div class="fsm-kv">—</div>';
+  else {
+    html += resp
+      .map(m => {
+        const inv = m.tool_invocation;
+        if (inv && inv.name) {
+          return `<pre class="fsm-pre" style="max-height:72px"><b>Tool call</b> ${esc(String(inv.name))}(${esc(truncateJSON(inv.arguments, 200))})</pre>`;
+        }
+        return `<pre class="fsm-pre" style="max-height:72px">${esc(truncateJSON(m.content, 280))}</pre>`;
+      })
+      .join('');
+  }
+  html += '</div><div class="fsm-kv" style="margin-top:8px;opacity:.85">Enable <strong>Full LLM bodies</strong> for system prompt and full messages.</div>';
+  return html;
+}
+
+function buildVariableEventBody(step, prefs) {
+  const updates = step.data?.variable_updates || [];
+  if (!updates.length) return '<div class="fsm-kv">(empty variable_updates)</div>';
+  const vis = filterVariableUpdates(updates, prefs);
+  let html = '<ul class="fsm-var-ul">';
+  for (const u of vis) {
+    html += `<li><code>${esc(String(u.variable_name || ''))}</code>`;
+    html += `<div class="fsm-kv">← ${esc(truncateJSON(u.variable_past_value, 100))}</div>`;
+    html += `<div class="fsm-kv">→ ${esc(truncateJSON(u.variable_new_value, 100))}</div>`;
+    if (u.variable_change_reason) html += `<div class="fsm-kv">${esc(truncateJSON(u.variable_change_reason, 120))}</div>`;
+    html += '</li>';
+  }
+  html += '</ul>';
+  return html;
+}
+
+function buildEventBody(ev, step) {
+  const d = step.data || {};
+  switch (ev.kind) {
+    case 'transition':
+      return `<div class="fsm-kv">To agent: <strong>${esc(String(d.to_agent || ''))}</strong></div><div class="fsm-kv">${esc(String(d.transition_type || ''))} · ${esc(String(d.transition_mode || ''))}</div>`;
+    case 'user':
+      return `<div class="fsm-pre" style="max-height:100px">${esc(step.message || '')}</div>`;
+    case 'entry': {
+      const nKeys = d.state_variables && typeof d.state_variables === 'object' ? Object.keys(d.state_variables).length : 0;
+      return `<div class="fsm-kv">${nKeys} state variable keys captured on entry.</div>`;
+    }
+    case 'variable':
+      return buildVariableEventBody(step, timelineFilterPrefs);
+    case 'action': {
+      const names = (d.action_names || []).map(x => esc(String(x))).join('<br>') || '—';
+      return `<div class="fsm-mono" style="font-family:var(--font-mono);font-size:10px;line-height:1.5">${names}</div>`;
+    }
+    case 'enabled': {
+      const tools = (d.enabled_tools || []).map(x => `<span class="fsm-chip">${esc(String(x))}</span>`).join(' ');
+      return `<div class="fsm-chips">${tools || '—'}</div>`;
+    }
+    case 'llm_sent':
+      return timelineFilterPrefs.fullLlm ? formatFsmLlmStepBody(step) : formatFsmLlmStepBodyCompact(step);
+    case 'execute': {
+      const fn = step.function || {};
+      const fnName = fn.name != null ? String(fn.name) : '';
+      return `${fnName ? `<div class="fsm-kv" style="margin-bottom:6px"><strong>${esc(fnName)}</strong></div>` : ''}<pre class="fsm-pre">${esc(truncateJSON(fn.input, 350))}</pre><div class="fsm-kv" style="margin-top:6px">Output</div><pre class="fsm-pre">${esc(truncateJSON(fn.output, 450))}</pre>${
+        step.executionLatency != null ? `<div class="fsm-kv">Latency: ${esc(String(step.executionLatency))} ms</div>` : ''
+      }`;
+    }
+    case 'response':
+      return `<div class="fsm-kv">${esc(truncateJSON(d, 200))}</div>`;
+    default:
+      return '';
+  }
+}
+
+function ensureEventBody(ev) {
+  const sig = bodyCacheSig();
+  if (ev._body != null && ev._bodySig === sig) return ev._body;
+  const plan = currentData && currentData.plan;
+  if (!plan || ev.stepIndex == null) return '';
+  const step = plan[ev.stepIndex];
+  ev._body = buildEventBody(ev, step);
+  ev._bodySig = sig;
+  return ev._body;
+}
+
+function buildRawTopicTimeline(plan, topicId) {
+  const events = [];
+  if (!plan || !topicId) return events;
+  let prevAgent = 'none';
+  for (let i = 0; i < plan.length; i++) {
+    const step = plan[i];
+    const d = step.data || {};
+    const topic = getAgentForStep(step, prevAgent);
+    prevAgent = topic;
+    if (topic !== topicId) continue;
+
+    const t = step.startExecutionTime || 0;
+
+    if (step.type === 'TransitionStep') {
+      events.push({
+        stepIndex: i,
+        t,
+        macro: null,
+        kind: 'transition',
+        title: 'Handoff (leaving topic)',
+        subtitle: withStepDuration('', step),
+        _body: null,
+        _bodySig: null,
+      });
+      continue;
+    }
+
+    if (step.type === 'UserInputStep') {
+      events.push({
+        stepIndex: i,
+        t,
+        macro: 'UserInput',
+        kind: 'user',
+        title: 'User input',
+        subtitle: withStepDuration('', step),
+        _body: null,
+        _bodySig: null,
+      });
+    }
+
+    if (step.type === 'NodeEntryStateStep') {
+      const sub = d.directive_context ? esc(String(d.directive_context)) : '';
+      events.push({
+        stepIndex: i,
+        t,
+        macro: 'Entry',
+        kind: 'entry',
+        title: 'Node entry',
+        subtitle: withStepDuration(sub, step),
+        _body: null,
+        _bodySig: null,
+      });
+    }
+
+    if (step.type === 'VariableUpdateStep') {
+      events.push({
+        stepIndex: i,
+        t,
+        macro: 'Prep',
+        kind: 'variable',
+        title: 'Variable update',
+        subtitle: withStepDuration('', step),
+        _body: null,
+        _bodySig: null,
+      });
+    }
+
+    if (step.type === 'BeforeReasoningIterationStep') {
+      events.push({
+        stepIndex: i,
+        t,
+        macro: 'Prep',
+        kind: 'action',
+        title: 'Prep · actions processed',
+        subtitle: withStepDuration('', step),
+        _body: null,
+        _bodySig: null,
+      });
+    }
+
+    if (step.type === 'EnabledToolsStep') {
+      events.push({
+        stepIndex: i,
+        t,
+        macro: 'Prep',
+        kind: 'enabled',
+        title: 'Tools enabled for agent',
+        subtitle: withStepDuration('', step),
+        _body: null,
+        _bodySig: null,
+      });
+    }
+
+    if (step.type === 'LLMStep') {
+      const lat = d.execution_latency != null ? `${esc(String(d.execution_latency))} ms` : '';
+      const subParts = [d.agent_name && esc(String(d.agent_name)), d.prompt_name && esc(String(d.prompt_name)), lat].filter(Boolean);
+      events.push({
+        stepIndex: i,
+        t,
+        macro: 'LLM',
+        badgeLabel: 'LLM',
+        badgeIsMacro: true,
+        kind: 'llm_sent',
+        title: 'LLM call',
+        subtitle: withStepDuration(subParts.join(' · '), step),
+        _body: null,
+        _bodySig: null,
+      });
+    }
+
+    if (step.type === 'FunctionStep') {
+      const fn = step.function || {};
+      const fnName = fn.name != null ? String(fn.name) : '';
+      const macroId = functionStepMacroId(step);
+      const badgeLabel = fnName ? (fnName.length > 28 ? fnName.slice(0, 27) + '…' : fnName) : 'Function';
+      const latSub = step.executionLatency != null ? `${esc(String(step.executionLatency))} ms` : '';
+      events.push({
+        stepIndex: i,
+        t,
+        macro: macroId,
+        badgeLabel,
+        badgeTitle: fnName || undefined,
+        badgeIsMacro: !fnName,
+        kind: 'execute',
+        title: 'Tool executed',
+        subtitle: withStepDuration(latSub, step),
+        _body: null,
+        _bodySig: null,
+      });
+    }
+
+    if (step.type === 'PlannerResponseStep' || step.type === 'ReasoningStep') {
+      events.push({
+        stepIndex: i,
+        t,
+        macro: 'Response',
+        kind: 'response',
+        title: step.type === 'PlannerResponseStep' ? 'Planner response' : 'Reasoning',
+        subtitle: withStepDuration('', step),
+        _body: null,
+        _bodySig: null,
+      });
+    }
+  }
+  return events;
+}
+
+function topicLlmLatencySumMs(plan, topicId) {
+  if (!plan || !topicId) return 0;
+  let prev = 'none';
+  let sum = 0;
+  for (let i = 0; i < plan.length; i++) {
+    const step = plan[i];
+    const topic = getAgentForStep(step, prev);
+    prev = topic;
+    if (topic !== topicId || step.type !== 'LLMStep') continue;
+    const lat = step.data && step.data.execution_latency;
+    if (typeof lat === 'number' && lat > 0) sum += lat;
+  }
+  return sum;
+}
+
+function parsePlan(plan) {
+  const displayNames = Object.create(null);
+  const topicSet = new Set();
+  const edgeMap = new Map();
+  const fsmSequences = Object.create(null);
+  const topicDetails = Object.create(null);
+
+  let prevAgent = 'none';
+  for (let i = 0; i < plan.length; i++) {
+    const step = plan[i];
+    const d = step.data || {};
+
+    if (step.type === 'TransitionStep') {
+      recordDisplay(displayNames, agentKey(d.from_agent), d.from_agent);
+      recordDisplay(displayNames, agentKey(d.to_agent), d.to_agent);
+      const from = agentKey(d.from_agent);
+      const to = agentKey(d.to_agent);
+      if (from !== 'none' && d.current_state && typeof d.current_state === 'object') {
+        const td = ensureTopicDetails(topicDetails, from);
+        if (td) for (const k of Object.keys(d.current_state)) td.variableNames.add(k);
+      }
+      if (from !== 'none' && to !== 'none') {
+        topicSet.add(from);
+        topicSet.add(to);
+        const key = from + '\0' + to;
+        const dur = (step.endExecutionTime - step.startExecutionTime) || 0;
+        if (!edgeMap.has(key)) edgeMap.set(key, { from, to, count: 0, weight: 0 });
+        const e = edgeMap.get(key);
+        e.count++;
+        e.weight += dur;
+      }
+    }
+    if (step.type === 'NodeEntryStateStep') {
+      recordDisplay(displayNames, agentKey(d.agent_name), d.agent_name);
+      const nk = agentKey(d.agent_name);
+      if (nk !== 'none' && d.state_variables && typeof d.state_variables === 'object') {
+        const td = ensureTopicDetails(topicDetails, nk);
+        if (td) for (const k of Object.keys(d.state_variables)) td.variableNames.add(k);
+      }
+    }
+    if (step.type === 'LLMStep' || step.type === 'EnabledToolsStep') recordDisplay(displayNames, agentKey(d.agent_name), d.agent_name);
+
+    const topic = getAgentForStep(step, prevAgent);
+
+    if (step.type === 'VariableUpdateStep') {
+      const td = ensureTopicDetails(topicDetails, topic);
+      if (td) {
+        const updates = d.variable_updates || [];
+        for (const u of updates) {
+          if (u.variable_name) td.variableNames.add(String(u.variable_name));
+          td.variableUpdates.push({
+            stepIndex: i,
+            name: u.variable_name,
+            past: u.variable_past_value,
+            new: u.variable_new_value,
+            reason: u.variable_change_reason,
+            directive: u.directive_context,
+          });
+        }
+      }
+    }
+
+    if (step.type === 'BeforeReasoningIterationStep') {
+      const td = ensureTopicDetails(topicDetails, topic);
+      if (td) for (const a of d.action_names || []) td.beforeReasoningActions.add(String(a));
+    }
+
+    if (step.type === 'EnabledToolsStep') {
+      const td = ensureTopicDetails(topicDetails, topic);
+      if (td) for (const x of d.enabled_tools || []) td.enabledTools.add(String(x));
+    }
+
+    if (step.type === 'LLMStep') {
+      const td = ensureTopicDetails(topicDetails, topic);
+      if (td) {
+        if (d.prompt_name) td.promptNames.add(String(d.prompt_name));
+        for (const x of step.tools_sent || []) td.toolsSent.add(String(x));
+        for (const m of step.response_messages || []) {
+          const inv = m.tool_invocation;
+          if (inv && inv.name) {
+            const nm = String(inv.name);
+            td.toolsInvoked.add(nm);
+            td.toolInvocations.push({
+              name: nm,
+              arguments: inv.arguments,
+              stepIndex: i,
+            });
+          }
+        }
+      }
+    }
+
+    if (step.type === 'FunctionStep') {
+      const fn = step.function;
+      const td = ensureTopicDetails(topicDetails, topic);
+      if (td && fn && fn.name) {
+        const nm = String(fn.name);
+        td.toolsExecuted.add(nm);
+        td.functionsExecuted.push({
+          name: nm,
+          input: fn.input,
+          output: fn.output,
+          latency: step.executionLatency,
+          start: step.startExecutionTime,
+          stepIndex: i,
+        });
+      }
+    }
+
+    prevAgent = topic;
+
+    if (topic !== 'none') topicSet.add(topic);
+
+    const macro = stepToMacro(step);
+    if (macro && topic !== 'none') {
+      if (!fsmSequences[topic]) fsmSequences[topic] = [];
+      fsmSequences[topic].push(macro);
+    }
+  }
+
+  const fsmEdges = Object.create(null);
+  for (const topic of Object.keys(fsmSequences)) {
+    const seq = fsmSequences[topic];
+    const trans = new Map();
+    for (let j = 1; j < seq.length; j++) {
+      const a = seq[j - 1];
+      const b = seq[j];
+      const k = a + '\0' + b;
+      trans.set(k, (trans.get(k) || 0) + 1);
+    }
+    fsmEdges[topic] = trans;
+  }
+
+  topicSet.delete('none');
+
+  return {
+    displayNames,
+    topics: [...topicSet].sort(),
+    transitionEdges: [...edgeMap.values()],
+    fsmSequences,
+    fsmEdges,
+    topicDetails,
+  };
+}
+
+function buildSimpleDigraph(topics, transitionEdges) {
+  const adj = Object.create(null);
+  const adjR = Object.create(null);
+  for (const t of topics) {
+    adj[t] = [];
+    adjR[t] = [];
+  }
+  const edgeSet = new Set();
+  for (const e of transitionEdges) {
+    if (!topics.includes(e.from) || !topics.includes(e.to)) continue;
+    const key = e.from + '->' + e.to;
+    if (!edgeSet.has(key)) {
+      edgeSet.add(key);
+      adj[e.from].push(e.to);
+      adjR[e.to].push(e.from);
+    }
+  }
+  return { adj, adjR, mUnique: edgeSet.size };
+}
+
+function kosarajuSCC(topics, adj, adjR) {
+  const visited = Object.create(null);
+  const order = [];
+  for (const start of topics) {
+    if (visited[start]) continue;
+    const stack = [{ v: start, i: 0 }];
+    visited[start] = true;
+    while (stack.length) {
+      const frame = stack[stack.length - 1];
+      const neighbors = adj[frame.v] || [];
+      if (frame.i < neighbors.length) {
+        const w = neighbors[frame.i++];
+        if (!visited[w]) { visited[w] = true; stack.push({ v: w, i: 0 }); }
+      } else { order.push(frame.v); stack.pop(); }
+    }
+  }
+
+  const comp = Object.create(null);
+  let cid = 0;
+  for (let i = order.length - 1; i >= 0; i--) {
+    const start = order[i];
+    if (comp[start] !== undefined) continue;
+    const stack = [{ v: start, i: 0 }];
+    comp[start] = cid;
+    while (stack.length) {
+      const frame = stack[stack.length - 1];
+      const neighbors = adjR[frame.v] || [];
+      if (frame.i < neighbors.length) {
+        const w = neighbors[frame.i++];
+        if (comp[w] === undefined) { comp[w] = cid; stack.push({ v: w, i: 0 }); }
+      } else { stack.pop(); }
+    }
+    cid++;
+  }
+  const groups = [];
+  for (let i = 0; i < cid; i++) groups.push([]);
+  for (const v of topics) groups[comp[v]].push(v);
+  return { comp, groups, count: cid };
+}
+
+function weaklyConnectedComponents(topics, adj) {
+  const und = Object.create(null);
+  for (const t of topics) und[t] = new Set();
+  for (const u of topics) {
+    for (const v of adj[u] || []) {
+      und[u].add(v);
+      und[v].add(u);
+    }
+  }
+  const seen = Object.create(null);
+  const comps = [];
+  for (const start of topics) {
+    if (seen[start]) continue;
+    const stack = [start];
+    const cur = [];
+    seen[start] = true;
+    while (stack.length) {
+      const u = stack.pop();
+      cur.push(u);
+      for (const v of und[u] || []) {
+        if (!seen[v]) {
+          seen[v] = true;
+          stack.push(v);
+        }
+      }
+    }
+    comps.push(cur);
+  }
+  return comps;
+}
+
+function bfsDistancesUndirected(start, topics, adj) {
+  const und = Object.create(null);
+  for (const t of topics) und[t] = new Set();
+  for (const u of topics) {
+    for (const v of adj[u] || []) {
+      und[u].add(v);
+      und[v].add(u);
+    }
+  }
+  const dist = Object.create(null);
+  const q = [start];
+  dist[start] = 0;
+  for (let qi = 0; qi < q.length; qi++) {
+    const u = q[qi];
+    for (const v of und[u] || []) {
+      if (dist[v] === undefined) {
+        dist[v] = dist[u] + 1;
+        q.push(v);
+      }
+    }
+  }
+  return dist;
+}
+
+function undirectedDiameter(topics, adj) {
+  if (topics.length <= 1) return 0;
+  let diam = 0;
+  for (const s of topics) {
+    const d = bfsDistancesUndirected(s, topics, adj);
+    for (const t of topics) {
+      if (d[t] !== undefined && d[t] > diam) diam = d[t];
+    }
+  }
+  return diam;
+}
+
+function brandesBetweennessUndirected(topics, adj) {
+  const und = Object.create(null);
+  for (const t of topics) und[t] = [];
+  for (const u of topics) {
+    for (const v of adj[u] || []) {
+      if (!und[u].includes(v)) und[u].push(v);
+      if (!und[v].includes(u)) und[v].push(u);
+    }
+  }
+  const C = Object.create(null);
+  for (const v of topics) C[v] = 0;
+
+  for (const s of topics) {
+    const S = [];
+    const P = Object.create(null);
+    const sigma = Object.create(null);
+    const d = Object.create(null);
+    for (const v of topics) {
+      P[v] = [];
+      sigma[v] = 0;
+      d[v] = -1;
+    }
+    sigma[s] = 1;
+    d[s] = 0;
+    const Q = [s];
+    for (let qi = 0; qi < Q.length; qi++) {
+      const v = Q[qi];
+      S.push(v);
+      for (const w of und[v]) {
+        if (d[w] < 0) {
+          Q.push(w);
+          d[w] = d[v] + 1;
+        }
+        if (d[w] === d[v] + 1) {
+          P[w].push(v);
+          sigma[w] += sigma[v];
+        }
+      }
+    }
+    const delta = Object.create(null);
+    for (const v of topics) delta[v] = 0;
+    while (S.length) {
+      const w = S.pop();
+      for (const v of P[w]) delta[v] += sigma[v] / sigma[w] * (1 + delta[w]);
+      if (w !== s) C[w] += delta[w];
+    }
+  }
+  for (const v of topics) C[v] /= 2;
+  return C;
+}
+
+function analyzeGraph(parsed) {
+  const { topics, transitionEdges } = parsed;
+  const n = topics.length;
+  const mMulti = transitionEdges.reduce((s, e) => s + e.count, 0);
+  const { adj, adjR, mUnique } = buildSimpleDigraph(topics, transitionEdges);
+  const density = n > 1 ? mUnique / (n * (n - 1)) : 0;
+
+  const indeg = Object.create(null);
+  const outdeg = Object.create(null);
+  for (const t of topics) {
+    indeg[t] = 0;
+    outdeg[t] = adj[t].length;
+  }
+  for (const u of topics) for (const v of adj[u]) indeg[v]++;
+
+  const scc = kosarajuSCC(topics, adj, adjR);
+  const wcc = weaklyConnectedComponents(topics, adj);
+  const nontrivialScc = scc.groups.filter(g => g.length > 1);
+  const selfLoops = transitionEdges.filter(e => e.from === e.to && e.count > 0);
+
+  const diam = n > 0 ? undirectedDiameter(topics, adj) : 0;
+  const between = n > 0 && n <= 40 ? brandesBetweennessUndirected(topics, adj) : null;
+
+  let maxBt = null;
+  let maxBtVal = -1;
+  if (between) {
+    for (const t of topics) {
+      if (between[t] > maxBtVal) {
+        maxBtVal = between[t];
+        maxBt = t;
+      }
+    }
+  }
+
+  const treeLower = wcc.length === 1 && n > 0 ? n - 1 : null;
+  const redundancy = mMulti - mUnique;
+
+  let prose = [];
+  if (wcc.length > 1) {
+    prose.push(`This trace spans <strong>${wcc.length}</strong> weakly connected topic islands — handoffs do not connect all topics in one component.`);
+  } else if (n > 0) {
+    prose.push('All topics sit in one weakly connected component.');
+  }
+  if (nontrivialScc.length > 0) {
+    prose.push(`Strongly connected components with 2+ topics: <strong>${nontrivialScc.length}</strong> — routing may form directed cycles (revisit topics).`);
+  } else if (n > 0 && mUnique > 0) {
+    prose.push('Topic digraph is acyclic at the simple-edge level (DAG-like); flow is easier to follow.');
+  }
+  if (treeLower != null && mUnique > treeLower) {
+    prose.push(`Unique transition arcs (<strong>${mUnique}</strong>) exceed the tree lower bound (<strong>${treeLower}</strong>) for a connected graph — extra paths or repeated topology.`);
+  }
+  if (redundancy > 0) {
+    prose.push(`<strong>${redundancy}</strong> repeated handoff(s) on the same arc (multiplicity &gt; 1).`);
+  }
+  if (maxBt && maxBtVal > 0) {
+    prose.push(`Highest betweenness (undirected): <strong>${esc(parsed.displayNames[maxBt] || maxBt)}</strong> — potential orchestration bottleneck.`);
+  }
+
+  return {
+    n,
+    mMulti,
+    mUnique,
+    density,
+    indeg,
+    outdeg,
+    scc,
+    wcc,
+    nontrivialScc,
+    selfLoops,
+    diam,
+    between,
+    maxBt,
+    maxBtVal,
+    treeLower,
+    redundancy,
+    prose,
+  };
+}
+
+function renderMetrics(parsed, a) {
+  const plan = currentData && currentData.plan;
+  const st = computePlanExecutionStats(plan || []);
+  let metricsOpen = false;
+  try {
+    metricsOpen = localStorage.getItem(LS_METRICS_OPEN) === '1';
+  } catch (_) {}
+
+  const rows = parsed.topics.map(t => {
+    const label = parsed.displayNames[t] || t;
+    return `<tr><td>${esc(label)}</td><td class="metric-val">${a.indeg[t]}</td><td class="metric-val">${a.outdeg[t]}</td></tr>`;
+  }).join('');
+  const btRows = a.between
+    ? parsed.topics
+        .map(t => ({ t, b: a.between[t] }))
+        .sort((x, y) => y.b - x.b)
+        .map(({ t, b }) => `<tr><td>${esc(parsed.displayNames[t] || t)}</td><td class="metric-val">${b.toFixed(3)}</td></tr>`)
+        .join('')
+    : '<tr><td colspan="2">(skipped for large graphs)</td></tr>';
+
+  const strip = `<span class="exec-stats-strip">
+    <span><b>${st.steps}</b> steps</span>
+    <span><b>${st.llm}</b> LLM</span>
+    <span><b>${st.fn}</b> functions</span>
+    <span><b>${st.transition}</b> transitions</span>
+    <span>Wall <b>${st.wall}ms</b></span>
+  </span>`;
+
+  document.getElementById('metricsCard').innerHTML = `
+    <details class="metrics-details" id="metricsDetails"${metricsOpen ? ' open' : ''}>
+      <summary class="metrics-summary">
+        ${strip}
+        <span class="metrics-summary-label">Graph analysis</span>
+      </summary>
+      <div class="metrics-details-inner">
+        <h3>Graph analysis</h3>
+        <div class="metrics-grid">
+          <div><span style="color:var(--text-dim)">|V|</span> <span class="metric-val">${a.n}</span></div>
+          <div><span style="color:var(--text-dim)">|E| multigraph</span> <span class="metric-val">${a.mMulti}</span></div>
+          <div><span style="color:var(--text-dim)">|E| simple</span> <span class="metric-val">${a.mUnique}</span></div>
+          <div><span style="color:var(--text-dim)">Density (simple)</span> <span class="metric-val">${a.density.toFixed(4)}</span></div>
+          <div><span style="color:var(--text-dim)">WCC</span> <span class="metric-val">${a.wcc.length}</span></div>
+          <div><span style="color:var(--text-dim)">SCC count</span> <span class="metric-val">${a.scc.count}</span></div>
+          <div><span style="color:var(--text-dim)">Undirected diameter</span> <span class="metric-val">${a.diam}</span></div>
+        </div>
+        <table class="deg-table">
+          <thead><tr><th>Topic</th><th>indeg</th><th>outdeg</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <h3 style="margin-top:12px">Betweenness (undirected, unweighted)</h3>
+        <table class="deg-table"><thead><tr><th>Topic</th><th>Centrality</th></tr></thead><tbody>${btRows}</tbody></table>
+        <div class="metrics-prose">${a.prose.map(p => `<p>${p}</p>`).join('')}</div>
+      </div>
+    </details>
+  `;
+  const det = document.getElementById('metricsDetails');
+  if (det) {
+    det.addEventListener('toggle', () => {
+      try {
+        localStorage.setItem(LS_METRICS_OPEN, det.open ? '1' : '0');
+      } catch (_) {}
+    });
+  }
+}
+
+function updateFsmTimelineMeta() {
+  const el = document.getElementById('fsmTimelineMeta');
+  if (!el) return;
+  const raw = fsmPlayback.rawEvents && fsmPlayback.rawEvents.length;
+  const fil = fsmPlayback.events && fsmPlayback.events.length;
+  let extra = '';
+  if (selectedTopicId && currentData && currentData.plan) {
+    const s = topicLlmLatencySumMs(currentData.plan, selectedTopicId);
+    if (s > 0) extra = ` · Σ LLM ${s}ms`;
+  }
+  el.textContent = `· showing ${fil} / raw ${raw}${extra}`;
+}
+
+function refreshFsmTimelineAfterFilterChange() {
+  if (!selectedTopicId || !vizParsed || !currentData) return;
+  readFilterUiToPrefs();
+  saveTimelineFilterPrefs();
+  const plan = currentData.plan;
+  fsmPlayback.rawEvents = buildRawTopicTimeline(plan, selectedTopicId);
+  fsmPlayback.events = applyTimelineFilters(plan, fsmPlayback.rawEvents, timelineFilterPrefs);
+  const n = fsmPlayback.events.length;
+  const scrub = document.getElementById('fsmScrub');
+  const feed = document.getElementById('fsmEventFeed');
+  if (n === 0) {
+    fsmPlayback.idx = -1;
+    fsmPlayback.lastFeedIdx = -1;
+    if (feed)
+      feed.innerHTML =
+        '<div style="padding:18px;font-size:12px;color:var(--text-dim);line-height:1.5">No events match the current filters for this topic.</div>';
+    if (scrub) {
+      scrub.max = 0;
+      scrub.value = '0';
+    }
+    document.getElementById('fsmStepLabel').textContent = '0 / 0';
+    setFsmHighlight(null);
+    syncFsmPlaybar();
+    updateFsmTimelineMeta();
+    return;
+  }
+  let idx = Math.min(Math.max(0, fsmPlayback.idx), n - 1);
+  fsmPlayback.lastFeedIdx = -1;
+  if (scrub) {
+    scrub.max = Math.max(0, n - 1);
+    scrub.value = String(idx);
+  }
+  setFsmPlaybackIndex(idx, false);
+  updateFsmTimelineMeta();
+}
+
+function topicNodeLabel(id, displayNames) {
+  const pretty = displayNames[id] || id.replace(/_/g, ' ');
+  return `${pretty} · ${id}`;
+}
+
+function svgEl(name, attrs, parent) {
+  const n = document.createElementNS('http://www.w3.org/2000/svg', name);
+  if (attrs) for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+
+function layoutRing(ids, cx, cy, R) {
+  const pos = Object.create(null);
+  const n = ids.length;
+  if (n === 0) return pos;
+  if (n === 1) {
+    pos[ids[0]] = { x: cx, y: cy };
+    return pos;
+  }
+  ids.forEach((id, i) => {
+    const ang = -Math.PI / 2 + (2 * Math.PI * i) / n;
+    pos[id] = { x: cx + R * Math.cos(ang), y: cy + R * Math.sin(ang) };
+  });
+  return pos;
+}
+
+function pointToward(ox, oy, tx, ty, radius, gap) {
+  const dx = tx - ox;
+  const dy = ty - oy;
+  const len = Math.hypot(dx, dy) || 1;
+  const r = radius + (gap || 0);
+  return { x: ox + (dx / len) * r, y: oy + (dy / len) * r };
+}
+
+function curvedPath(x1, y1, x2, y2, bend) {
+  if (!bend) return `M ${x1} ${y1} L ${x2} ${y2}`;
+  const mx = (x1 + x2) / 2;
+  const my = (y1 + y2) / 2;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.hypot(dx, dy) || 1;
+  const ox = (-dy / len) * bend;
+  const oy = (dx / len) * bend;
+  return `M ${x1} ${y1} Q ${mx + ox} ${my + oy} ${x2} ${y2}`;
+}
+
+function selfLoopPath(cx, cy, r) {
+  const s = r * 0.75;
+  return `M ${cx + s} ${cy - r * 0.25} A ${r * 1.2} ${r * 1.2} 0 1 1 ${cx - s * 0.85} ${cy - r * 0.15}`;
+}
+
+function clearFsmPanel() {
+  detachFsmKeyboardNav();
+  fsmPlayback.events = [];
+  fsmPlayback.rawEvents = [];
+  fsmPlayback.lastFeedIdx = -1;
+  fsmPlayback.nodeMap = null;
+  fsmPlayback.idx = -1;
+  document.getElementById('fsmTopicLabel').textContent = 'select a topic';
+  document.getElementById('fsmWrap').innerHTML =
+    '<div style="padding:20px;color:var(--text-dim);font-size:13px">Click a topic circle in the graph on the left.</div>';
+}
+
+function renderTopicGraph(parsed) {
+  vizParsed = parsed;
+  const el = document.getElementById('topicGraph');
+  el.innerHTML = '';
+  const VB_W = 760;
+  const VB_H = 480;
+  const cx = VB_W / 2;
+  const cy = VB_H / 2;
+  const topics = parsed.topics;
+  const orbitR = Math.min(VB_W, VB_H) * (0.3 + Math.min(0.06, topics.length * 0.004));
+  const nodeR = Math.max(36, Math.min(44, Math.floor(340 / (topics.length + 2.5))));
+  const pos = layoutRing(topics, cx, cy, topics.length === 1 ? 0 : orbitR);
+
+  const svg = svgEl('svg', { class: 'svg-graph', viewBox: `0 0 ${VB_W} ${VB_H}`, preserveAspectRatio: 'xMidYMid meet' }, el);
+  svg.setAttribute('overflow', 'visible');
+  const defs = svgEl('defs', {}, svg);
+  const m = svgEl('marker', {
+    id: 'topicArrow',
+    markerWidth: '12',
+    markerHeight: '10',
+    refX: '11',
+    refY: '5',
+    orient: 'auto',
+    markerUnits: 'userSpaceOnUse',
+  }, defs);
+  svgEl('path', { d: 'M 0 0.5 L 0 9.5 L 11 5 z', fill: 'var(--text)', opacity: '0.7' }, m);
+
+  const edgeGroup = svgEl('g', { class: 'edges' }, svg);
+  const pairCount = Object.create(null);
+  parsed.transitionEdges.forEach(e => {
+    const pk = e.from < e.to ? `${e.from}|${e.to}` : `${e.to}|${e.from}`;
+    pairCount[pk] = (pairCount[pk] || 0) + 1;
+  });
+  const pairIndex = Object.create(null);
+  parsed.transitionEdges.forEach(e => {
+    const p1 = pos[e.from];
+    const p2 = pos[e.to];
+    if (!p1 || !p2) return;
+    const pk = e.from < e.to ? `${e.from}|${e.to}` : `${e.to}|${e.from}`;
+    const total = pairCount[pk] || 1;
+    const idx = pairIndex[pk] || 0;
+    pairIndex[pk] = idx + 1;
+    let bend = 0;
+    if (e.from === e.to) bend = 0;
+    else if (total > 1) bend = (idx - (total - 1) / 2) * 20;
+    let dpath;
+    let lx;
+    let ly;
+    if (e.from === e.to) {
+      dpath = selfLoopPath(p1.x, p1.y, nodeR);
+      lx = p1.x + nodeR * 1.15;
+      ly = p1.y - nodeR * 1.35;
+    } else {
+      const a = pointToward(p1.x, p1.y, p2.x, p2.y, nodeR, 2);
+      const b = pointToward(p2.x, p2.y, p1.x, p1.y, nodeR, 4);
+      dpath = curvedPath(a.x, a.y, b.x, b.y, bend);
+      lx = (a.x + b.x) / 2;
+      ly = (a.y + b.y) / 2;
+      if (bend) {
+        const mx = (a.x + b.x) / 2;
+        const my = (a.y + b.y) / 2;
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const len = Math.hypot(dx, dy) || 1;
+        lx = mx + (-dy / len) * bend * 0.45;
+        ly = my + (dx / len) * bend * 0.45;
+      }
+    }
+    const path = svgEl('path', { class: 'edge', d: dpath }, edgeGroup);
+    path.setAttribute('marker-end', 'url(#topicArrow)');
+    const label = e.count > 1 ? String(e.count) : '';
+    if (label) {
+      const t = svgEl('text', { class: 'edge-label', x: String(lx), y: String(ly + 4) }, edgeGroup);
+      t.textContent = '×' + label;
+    }
+    const ti = svgEl('title', {}, path);
+    ti.textContent = `${e.count} handoff(s)`;
+  });
+
+  topics.forEach(id => {
+    const p = pos[id];
+    const g = svgEl('g', { class: 'topic-node' + (id === selectedTopicId ? ' selected' : ''), 'data-topic-id': id }, svg);
+    g.style.cursor = 'pointer';
+    svgEl('circle', { cx: String(p.x), cy: String(p.y), r: String(nodeR) }, g);
+    const raw = parsed.displayNames[id];
+    const pretty = raw || id.replace(/_/g, ' ');
+    const maxChars = Math.max(8, Math.floor(nodeR / 4));
+    const tLines = topicNodeSvgLines(pretty, maxChars);
+    const lineH = 14;
+    const totalH = tLines.length * lineH;
+    const startY = p.y - totalH / 2 + lineH * 0.6;
+    const fontSize = tLines.some(l => l.length > maxChars) ? 11 : 12;
+    const textEl = svgEl('text', { x: String(p.x), y: String(startY), style: `font-size:${fontSize}px` }, g);
+    tLines.forEach((line, li) => {
+      const tspan = svgEl('tspan', { x: String(p.x), dy: li === 0 ? '0' : String(lineH) }, textEl);
+      tspan.textContent = line;
+    });
+    const title = svgEl('title', {}, g);
+    title.textContent = `${pretty} (${id})`;
+  });
+
+  svg.addEventListener('click', ev => {
+    if (!vizParsed) return;
+    const hit = ev.target.closest('.topic-node');
+    if (hit && hit.dataset.topicId) {
+      selectedTopicId = hit.dataset.topicId;
+      renderTopicGraph(vizParsed);
+      renderFsm(selectedTopicId, vizParsed);
+    } else if (ev.target === svg || ev.target.closest('.edges')) {
+      selectedTopicId = null;
+      renderTopicGraph(vizParsed);
+      clearFsmPanel();
+    }
+  });
+}
+
+function syncFsmPlaybar() {
+  const prev = document.getElementById('fsmBtnPrev');
+  const next = document.getElementById('fsmBtnNext');
+  const n = fsmPlayback.events.length;
+  if (prev) prev.disabled = fsmPlayback.idx <= 0;
+  if (next) next.disabled = n === 0 || fsmPlayback.idx < 0 || fsmPlayback.idx >= n - 1;
+}
+
+function stepFsmPrev() {
+  if (fsmPlayback.idx > 0) setFsmPlaybackIndex(fsmPlayback.idx - 1, false);
+}
+
+function stepFsmNext() {
+  const n = fsmPlayback.events.length;
+  if (fsmPlayback.idx < n - 1) setFsmPlaybackIndex(fsmPlayback.idx + 1, true);
+}
+
+function setFsmHighlight(macro) {
+  if (!fsmPlayback.nodeMap) return;
+  for (const id of Object.keys(fsmPlayback.nodeMap)) {
+    const g = fsmPlayback.nodeMap[id];
+    if (!macro) {
+      g.classList.remove('active', 'dim');
+    } else {
+      g.classList.toggle('active', id === macro);
+      g.classList.toggle('dim', id !== macro);
+    }
+  }
+}
+
+function sortFsmNodeIds(ids) {
+  const orderRank = id => {
+    const i = FSM_MACRO_RING_ORDER.indexOf(id);
+    return i >= 0 ? i : 1000;
+  };
+  return [...ids].sort((a, b) => {
+    const ra = orderRank(a);
+    const rb = orderRank(b);
+    if (ra !== rb) return ra - rb;
+    return String(a).localeCompare(String(b));
+  });
+}
+
+function isFsmToolMacroId(id) {
+  return !FSM_BUILTIN_MACRO_IDS.has(id);
+}
+
+/** 1–2 short lines for node label inside the ring (not for edge keys). */
+function fsmNodeSvgLines(id, maxChars) {
+  const maxW = maxChars != null ? maxChars : 13;
+  if (id.length <= maxW) return [id];
+  const parts = id.split('_');
+  if (parts.length >= 2) {
+    const mid = Math.ceil(parts.length / 2);
+    const line1 = parts.slice(0, mid).join('_');
+    const line2 = parts.slice(mid).join('_');
+    if (line1.length <= maxW + 2 && line2.length <= maxW + 2) return [line1, line2];
+  }
+  return [id.length > maxW ? id.slice(0, maxW - 1) + '…' : id];
+}
+
+function topicNodeSvgLines(text, maxChars) {
+  const maxW = maxChars || 11;
+  if (text.length <= maxW) return [text];
+  const sep = text.includes('_') ? '_' : ' ';
+  const parts = text.split(sep === '_' ? /_/ : /\s+/);
+  if (parts.length >= 2) {
+    const mid = Math.ceil(parts.length / 2);
+    const line1 = parts.slice(0, mid).join(sep);
+    const line2 = parts.slice(mid).join(sep);
+    if (line1.length <= maxW + 2 && line2.length <= maxW + 2) return [line1, line2];
+  }
+  return [text.length > maxW ? text.slice(0, maxW - 1) + '…' : text];
+}
+
+function makeEventCardEl(ev, anim, isPast) {
+  const kindClass =
+    {
+      variable: 'var',
+      llm_sent: 'tool',
+      enabled: 'tool',
+      action: 'action',
+      execute: 'exec',
+      entry: 'entry',
+      user: 'user',
+      response: 'response',
+      transition: '',
+    }[ev.kind] || '';
+  const badgeRaw = ev.badgeLabel != null ? ev.badgeLabel : ev.macro || '—';
+  const macroCls = ev.badgeIsMacro === false ? '' : ' fsm-ev-badge-macro';
+  const tipAttr = ev.badgeTitle != null ? ` title="${esc(ev.badgeTitle)}"` : '';
+  const div = document.createElement('div');
+  div.className = 'fsm-event-card ' + kindClass + (isPast ? ' fsm-past' : '') + (anim ? ' fsm-anim' : '');
+  div.innerHTML = `
+    <div class="fsm-ev-title">
+      <span>${esc(ev.title)}</span>
+      <span class="fsm-ev-badge${macroCls}"${tipAttr}>${esc(badgeRaw)}</span>
+      <span class="fsm-ev-step">plan[${ev.stepIndex}]</span>
+    </div>
+    ${ev.subtitle ? `<div class="fsm-ev-sub">${ev.subtitle}</div>` : ''}
+    <div class="fsm-ev-body">${ensureEventBody(ev)}</div>
+  `;
+  return div;
+}
+
+function rebuildFsmFeedFromZero(feed, idx, animateLatest) {
+  feed.innerHTML = '';
+  for (let k = 0; k <= idx; k++) {
+    feed.appendChild(makeEventCardEl(fsmPlayback.events[k], animateLatest && k === idx, k < idx));
+  }
+  fsmPlayback.lastFeedIdx = idx;
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function setFsmPlaybackIndex(i, animateLatest) {
+  const n = fsmPlayback.events.length;
+  if (n === 0) return;
+  const idx = Math.max(0, Math.min(n - 1, i));
+  fsmPlayback.idx = idx;
+  const ev = fsmPlayback.events[idx];
+  setFsmHighlight(ev.macro);
+
+  const feed = document.getElementById('fsmEventFeed');
+  if (feed) {
+    const lastR = fsmPlayback.lastFeedIdx;
+    if (lastR < 0 || idx < lastR - 1 || idx > lastR + 1) {
+      rebuildFsmFeedFromZero(feed, idx, animateLatest);
+    } else if (idx === lastR + 1) {
+      if (feed.lastElementChild) feed.lastElementChild.classList.add('fsm-past');
+      feed.appendChild(makeEventCardEl(fsmPlayback.events[idx], animateLatest, false));
+      fsmPlayback.lastFeedIdx = idx;
+      feed.scrollTop = feed.scrollHeight;
+    } else if (idx === lastR - 1) {
+      if (feed.lastElementChild) feed.removeChild(feed.lastElementChild);
+      if (feed.lastElementChild) feed.lastElementChild.classList.remove('fsm-past');
+      fsmPlayback.lastFeedIdx = idx;
+      feed.scrollTop = feed.scrollHeight;
+    } else {
+      rebuildFsmFeedFromZero(feed, idx, animateLatest);
+    }
+  }
+
+  const scrub = document.getElementById('fsmScrub');
+  if (scrub) scrub.value = String(idx);
+  const lbl = document.getElementById('fsmStepLabel');
+  if (lbl) lbl.textContent = `${idx + 1} / ${n}`;
+  syncFsmPlaybar();
+}
+
+function renderFsmMacroSvg(container, trans) {
+  container.innerHTML = '';
+  const nodeIdSet = new Set();
+  for (const k of trans.keys()) {
+    const [a, b] = k.split('\0');
+    nodeIdSet.add(a);
+    nodeIdSet.add(b);
+  }
+  const nodeIds = sortFsmNodeIds([...nodeIdSet]);
+  const nNodes = nodeIds.length;
+
+  const VB_W = Math.min(900, 640 + Math.max(0, nNodes - 7) * 26);
+  const VB_H = Math.min(480, 340 + Math.max(0, nNodes - 7) * 18);
+  const cx = VB_W / 2;
+  const cy = VB_H / 2;
+  const nodeR = Math.max(24, Math.min(38, Math.floor(300 / (nNodes + 3.2))));
+  const orbitR = Math.min(VB_W, VB_H) * (0.24 + Math.min(0.1, nNodes * 0.006));
+  const pos = layoutRing(nodeIds, cx, cy, nNodes === 1 ? 0 : orbitR);
+  const labelMaxChars = nNodes > 12 ? 11 : 13;
+  const labelFontPx = nNodes > 14 ? 10 : nNodes > 10 ? 11 : 12;
+
+  const svg = svgEl('svg', { class: 'svg-graph fsm', viewBox: `0 0 ${VB_W} ${VB_H}`, preserveAspectRatio: 'xMidYMid meet' }, container);
+  svg.setAttribute('overflow', 'visible');
+  const defs = svgEl('defs', {}, svg);
+  const m = svgEl('marker', {
+    id: 'fsmArrow',
+    markerWidth: '12',
+    markerHeight: '10',
+    refX: '11',
+    refY: '5',
+    orient: 'auto',
+    markerUnits: 'userSpaceOnUse',
+  }, defs);
+  svgEl('path', { d: 'M 0 0.5 L 0 9.5 L 11 5 z', fill: 'var(--text)', opacity: '0.7' }, m);
+
+  const edgeGroup = svgEl('g', { class: 'edges' }, svg);
+  const multi = new Map();
+  for (const [k, c] of trans) {
+    const [from, to] = k.split('\0');
+    const pk = from < to ? `${from}\n${to}` : `${to}\n${from}`;
+    multi.set(pk, (multi.get(pk) || 0) + 1);
+  }
+  const seenDir = Object.create(null);
+  for (const [k, c] of trans) {
+    const [from, to] = k.split('\0');
+    const p1 = pos[from];
+    const p2 = pos[to];
+    if (!p1 || !p2) continue;
+    const pk = from < to ? `${from}\n${to}` : `${to}\n${from}`;
+    const total = multi.get(pk) || 1;
+    const idx = seenDir[pk] || 0;
+    seenDir[pk] = idx + 1;
+    let bend = from === to ? 0 : total > 1 ? (idx - (total - 1) / 2) * 28 : 0;
+    let dpath;
+    let lx;
+    let ly;
+    if (from === to) {
+      dpath = selfLoopPath(p1.x, p1.y, nodeR);
+      lx = p1.x + nodeR * 1.05;
+      ly = p1.y - nodeR * 1.25;
+    } else {
+      const a = pointToward(p1.x, p1.y, p2.x, p2.y, nodeR, 2);
+      const b = pointToward(p2.x, p2.y, p1.x, p1.y, nodeR, 4);
+      dpath = curvedPath(a.x, a.y, b.x, b.y, bend);
+      lx = (a.x + b.x) / 2;
+      ly = (a.y + b.y) / 2;
+      if (bend) {
+        const mx = (a.x + b.x) / 2;
+        const my = (a.y + b.y) / 2;
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const len = Math.hypot(dx, dy) || 1;
+        lx = mx + (-dy / len) * bend * 0.45;
+        ly = my + (dx / len) * bend * 0.45;
+      }
+    }
+    const path = svgEl('path', { class: 'edge', d: dpath }, edgeGroup);
+    path.setAttribute('marker-end', 'url(#fsmArrow)');
+    if (c > 1) {
+      const t = svgEl('text', { class: 'edge-label', x: String(lx), y: String(ly + 3) }, edgeGroup);
+      t.textContent = String(c);
+    }
+    const ti = svgEl('title', {}, path);
+    ti.textContent = `${from} → ${to} · ${c}×`;
+  }
+
+  const nodeMap = Object.create(null);
+  nodeIds.forEach(id => {
+    const p = pos[id];
+    const tool = isFsmToolMacroId(id);
+    const g = svgEl(
+      'g',
+      { class: 'fsm-node' + (tool ? ' fsm-node--tool' : ''), 'data-macro': id },
+      svg
+    );
+    svgEl('circle', { cx: String(p.x), cy: String(p.y), r: String(nodeR) }, g);
+    const lines = fsmNodeSvgLines(id, labelMaxChars);
+    const ty = p.y + (lines.length === 1 ? 3 : -4);
+    const textEl = svgEl(
+      'text',
+      {
+        x: String(p.x),
+        y: String(ty),
+        class: 'fsm-node-label',
+        style: `font-size:${labelFontPx}px`,
+      },
+      g
+    );
+    lines.forEach((line, li) => {
+      const tspan = svgEl('tspan', { x: String(p.x), dy: li === 0 ? '0' : '10' }, textEl);
+      tspan.textContent = line;
+    });
+    const nti = svgEl('title', {}, g);
+    nti.textContent = tool ? `${id} (tool execution)` : `${id} (orchestration)`;
+    nodeMap[id] = g;
+  });
+  return nodeMap;
+}
+
+function renderFsm(topicId, parsed) {
+  readFilterUiToPrefs();
+  const plan = (currentData && currentData.plan) || [];
+  fsmPlayback.lastFeedIdx = -1;
+  fsmPlayback.rawEvents = buildRawTopicTimeline(plan, topicId);
+  fsmPlayback.events = applyTimelineFilters(plan, fsmPlayback.rawEvents, timelineFilterPrefs);
+  fsmPlayback.idx = -1;
+  fsmPlayback.nodeMap = null;
+
+  const fsmTitle = parsed.displayNames[topicId] || topicId.replace(/_/g, ' ');
+  document.getElementById('fsmTopicLabel').textContent = `${fsmTitle} (${topicId})`;
+  const trans = parsed.fsmEdges[topicId];
+  const el = document.getElementById('fsmWrap');
+  el.innerHTML = '';
+
+  const panel = document.createElement('div');
+  panel.className = 'fsm-panel';
+
+  const playbar = document.createElement('div');
+  playbar.className = 'fsm-playbar';
+  playbar.innerHTML = `
+    <div class="fsm-playbar-title">Step through trace</div>
+    <button type="button" class="btn-fsm" id="fsmBtnPrev" title="Previous event">← Prev</button>
+    <button type="button" class="btn-fsm" id="fsmBtnNext" title="Next event">Next →</button>
+    <span id="fsmStepLabel" style="font-size:11px;font-family:var(--font-mono);color:var(--text-dim);white-space:nowrap">—</span>
+    <input type="range" id="fsmScrub" min="0" max="0" value="0" />
+  `;
+  panel.appendChild(playbar);
+
+  const macroSlot = document.createElement('div');
+  macroSlot.className = 'fsm-macro-slot';
+  panel.appendChild(macroSlot);
+
+  if (trans && trans.size > 0) {
+    fsmPlayback.nodeMap = renderFsmMacroSvg(macroSlot, trans);
+  } else {
+    macroSlot.innerHTML =
+      '<div style="padding:22px;font-size:12px;color:var(--text-dim);text-align:center;line-height:1.55">No macro FSM edges for this topic.<br><span style="font-size:11px;opacity:.88">The timeline below still lists matching steps.</span></div>';
+  }
+
+  const timeline = document.createElement('div');
+  timeline.className = 'fsm-timeline';
+  timeline.innerHTML =
+    '<div class="fsm-timeline-h">Trace stream <span id="fsmTimelineMeta" style="font-weight:400;opacity:.88"></span></div><div class="fsm-event-feed" id="fsmEventFeed"></div>';
+  panel.appendChild(timeline);
+  el.appendChild(panel);
+
+  const n = fsmPlayback.events.length;
+  const scrub = document.getElementById('fsmScrub');
+  scrub.max = Math.max(0, n - 1);
+
+  document.getElementById('fsmBtnPrev').addEventListener('click', stepFsmPrev);
+  document.getElementById('fsmBtnNext').addEventListener('click', stepFsmNext);
+  scrub.addEventListener('input', () => {
+    setFsmPlaybackIndex(parseInt(scrub.value, 10) || 0, false);
+  });
+
+  if (n === 0) {
+    document.getElementById('fsmEventFeed').innerHTML =
+      fsmPlayback.rawEvents.length === 0
+        ? '<div style="padding:18px;font-size:12px;color:var(--text-dim);line-height:1.5">No plan steps are attributed to this topic (check topic handoffs and agent names).</div>'
+        : '<div style="padding:18px;font-size:12px;color:var(--text-dim);line-height:1.5">No events match the current filters for this topic.</div>';
+    document.getElementById('fsmStepLabel').textContent = '0 / 0';
+    setFsmHighlight(null);
+    document.getElementById('fsmBtnPrev').disabled = true;
+    document.getElementById('fsmBtnNext').disabled = true;
+    syncFsmPlaybar();
+    updateFsmTimelineMeta();
+    attachFsmKeyboardNav();
+    return;
+  }
+
+  updateFsmTimelineMeta();
+  setFsmPlaybackIndex(0, false);
+  attachFsmKeyboardNav();
+}
+
+const MAX_INPUT_BYTES = 50 * 1024 * 1024;
+const MAX_PLAN_STEPS = 10000;
+
+function showError(msg) {
+  const t = document.createElement('div');
+  t.className = 'error-toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+function loadData(json) {
+  if (!json || !Array.isArray(json.plan)) {
+    showError('JSON must contain a "plan" array (PlanSuccessResponse).');
+    return;
+  }
+  if (json.plan.length > MAX_PLAN_STEPS) {
+    showError(`Plan exceeds maximum of ${MAX_PLAN_STEPS} steps.`);
+    return;
+  }
+  currentData = json;
+  selectedTopicId = null;
+  const parsed = parsePlan(json.plan);
+  analysis = analyzeGraph(parsed);
+
+  document.getElementById('mainEmpty').classList.add('hidden');
+  document.getElementById('mainViz').classList.remove('hidden');
+  document.body.classList.add('app-viz');
+  document.getElementById('btnClear').classList.remove('hidden');
+
+  const meta = document.getElementById('headerMeta');
+  meta.innerHTML = [
+    json.planId ? `<span class="meta-chip"><strong>Plan</strong> ${esc(String(json.planId).slice(0, 14))}…</span>` : '',
+    json.sessionId ? `<span class="meta-chip"><strong>Session</strong> ${esc(String(json.sessionId).slice(0, 14))}…</span>` : '',
+    `<span class="meta-chip"><strong>Topics</strong> ${parsed.topics.length}</span>`,
+  ].join('');
+
+  renderMetrics(parsed, analysis);
+  renderTopicGraph(parsed);
+
+  clearFsmPanel();
+}
+
+function clearAll() {
+  detachFsmKeyboardNav();
+  currentData = null;
+  analysis = null;
+  vizParsed = null;
+  selectedTopicId = null;
+  document.getElementById('topicGraph').innerHTML = '';
+  document.getElementById('mainViz').classList.add('hidden');
+  document.getElementById('mainEmpty').classList.remove('hidden');
+  document.body.classList.remove('app-viz');
+  document.getElementById('btnClear').classList.add('hidden');
+  document.getElementById('headerMeta').innerHTML = '';
+}
+
+function openModal() {
+  document.getElementById('uploadOverlay').classList.remove('hidden');
+  document.getElementById('jsonInput').value = '';
+}
+
+document.getElementById('btnTheme').addEventListener('click', () => {
+  document.body.classList.toggle('light');
+  document.getElementById('btnTheme').textContent = document.body.classList.contains('light') ? 'Dark' : 'Light';
+  if (currentData && analysis) {
+    const parsed = parsePlan(currentData.plan);
+    renderTopicGraph(parsed);
+    if (selectedTopicId) renderFsm(selectedTopicId, parsed);
+  }
+});
+
+document.getElementById('btnLoad').addEventListener('click', openModal);
+document.getElementById('btnPaste').addEventListener('click', openModal);
+document.getElementById('btnCancel').addEventListener('click', () => document.getElementById('uploadOverlay').classList.add('hidden'));
+document.getElementById('btnParse').addEventListener('click', () => {
+  const v = document.getElementById('jsonInput').value.trim();
+  if (!v) return showError('Paste JSON first.');
+  if (v.length > MAX_INPUT_BYTES) return showError('Input too large. Maximum size is 50 MB.');
+  try {
+    loadData(JSON.parse(v));
+    document.getElementById('uploadOverlay').classList.add('hidden');
+  } catch (e) {
+    showError('Invalid JSON: ' + e.message);
+  }
+});
+document.getElementById('btnClear').addEventListener('click', clearAll);
+
+document.getElementById('fileInput').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  if (f.size > MAX_INPUT_BYTES) { showError('File too large. Maximum size is 50 MB.'); e.target.value = ''; return; }
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      loadData(JSON.parse(r.result));
+    } catch (err) {
+      showError('Invalid JSON file.');
+    }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+});
+
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = 'var(--blue)'; });
+dz.addEventListener('dragleave', () => { dz.style.borderColor = ''; });
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.style.borderColor = '';
+  const f = e.dataTransfer.files[0];
+  if (!f) return;
+  if (f.size > MAX_INPUT_BYTES) { showError('File too large. Maximum size is 50 MB.'); return; }
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      loadData(JSON.parse(r.result));
+    } catch (err) {
+      showError('Invalid JSON file.');
+    }
+  };
+  r.readAsText(f);
+});
+
+loadTimelineFilterPrefs();
+syncFilterUiFromPrefs();
+['chkVarUpdates', 'chkReasoning', 'chkNodeEntry', 'chkEnabledTools', 'chkUnderscoreVars', 'chkAgentScriptVars', 'chkFullLlm'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('change', refreshFsmTimelineAfterFilterChange);
+});
+</script>
+</body>
+</html>
