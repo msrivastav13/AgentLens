@@ -66,7 +66,8 @@ body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
 .layout.topic-collapsed .panel--topic .panel-h .panel-h-text{order:1}
 .layout.topic-collapsed .panel--topic .panel-h .panel-collapse-btn{order:0;transform:none;writing-mode:horizontal-tb}
 .layout.topic-collapsed .panel--topic .graph-wrap,
-.layout.topic-collapsed .panel--topic .panel-note{display:none}
+.layout.topic-collapsed .panel--topic .panel-note,
+.layout.topic-collapsed .panel--topic #topicTraceSlot{display:none}
 .layout.topic-collapsed .panel-collapse-btn svg{transform:rotate(180deg)}
 
 .layout.topic-collapsed .panel--fsm .fsm-playbar{padding:12px 18px;gap:10px}
@@ -110,8 +111,10 @@ body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
 .graph-wrap#topicGraph svg{display:block;width:100%;height:auto;max-height:100%;cursor:default;flex-shrink:0}
 .graph-wrap svg{display:block;width:100%;height:100%;cursor:default}
 .panel--fsm{min-height:0;align-self:stretch;width:100%;display:flex;flex-direction:column;overflow-y:auto}
-.graph-wrap#fsmWrap{flex:1 1 auto;min-height:0;height:auto!important;max-height:none;display:flex;flex-direction:column;overflow:visible}
+.graph-wrap#fsmWrap{flex:1 1 auto;min-height:0;height:auto!important;max-height:none;display:flex;flex-direction:column;overflow:hidden}
 .fsm-panel{display:flex;flex-direction:column;flex:1;min-height:0;height:100%}
+.panel--topic{overflow-y:auto!important}
+#topicTraceSlot{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;overflow:hidden}
 .fsm-playbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
 .fsm-playbar .fsm-playbar-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);width:100%;margin-bottom:2px}
 .fsm-playbar input[type=range]{flex:1;min-width:120px;accent-color:var(--cyan)}
@@ -160,12 +163,19 @@ body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
 .fsm-detail-slot .fsm-pre{max-height:240px}
 .fsm-detail-slot .fsm-msg-bubble{max-height:240px}
 .fsm-detail-meta{font-size:11px;color:var(--text-dim);font-family:var(--font-mono);margin-bottom:8px}
-.fsm-timeline{flex:1 1 auto;min-height:180px;display:flex;flex-direction:column;background:var(--surface2);overflow:hidden}
+.fsm-timeline{flex:1 1 auto;min-height:120px;display:flex;flex-direction:column;background:var(--surface2);overflow:hidden}
 .fsm-timeline-h{padding:8px 12px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);border-bottom:1px solid var(--border)}
 .fsm-event-feed{flex:1;overflow-y:auto;padding:10px 12px 14px;display:flex;flex-direction:column;gap:10px}
-.fsm-event-card{border-radius:var(--radius-sm);padding:10px 12px;font-size:clamp(11px,1.3vw,13px);line-height:1.45;border:1px solid var(--border);background:var(--surface);box-shadow:0 1px 0 rgba(0,0,0,.06)}
+.fsm-event-card{border-radius:var(--radius-sm);padding:10px 12px;font-size:clamp(11px,1.3vw,13px);line-height:1.45;border:1px solid var(--border);background:var(--surface);box-shadow:0 1px 0 rgba(0,0,0,.06);transition:opacity .2s,filter .2s,border-color .2s,box-shadow .2s}
 .fsm-event-card.fsm-anim{animation:fsmCardIn .4s cubic-bezier(.22,1,.36,1) both}
-.fsm-event-card.fsm-past{opacity:.42;filter:grayscale(.15)}
+.fsm-event-card.fsm-past{opacity:.35;filter:grayscale(.25);transform:scale(.98);transform-origin:left top}
+.fsm-event-card.fsm-current{border-left:3px solid var(--cyan);box-shadow:0 0 12px rgba(34,211,238,.25),0 2px 8px rgba(0,0,0,.1);position:relative}
+.light .fsm-event-card.fsm-current{box-shadow:0 0 10px rgba(8,145,178,.2),0 2px 8px rgba(0,0,0,.06)}
+.fsm-current-label{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.3);border-radius:4px;padding:1px 6px;margin-left:auto}
+.light .fsm-current-label{color:rgba(8,145,178,1);background:rgba(8,145,178,.08);border-color:rgba(8,145,178,.25)}
+.fsm-history-divider{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);opacity:.6}
+.fsm-history-divider::before,.fsm-history-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.fsm-history-divider::before{max-width:40px}
 .fsm-event-card .fsm-ev-title{font-weight:700;color:var(--text-bright);font-size:clamp(12px,1.4vw,14px);margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .fsm-event-card .fsm-ev-badge{font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 8px;border-radius:999px;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);max-width:min(240px,46vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fsm-event-card .fsm-ev-badge.fsm-ev-badge-macro{text-transform:uppercase}
@@ -370,6 +380,7 @@ body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
       </div>
       <div class="graph-wrap" id="topicGraph"></div>
       <div class="panel-note">Topics (normalized ids) on a ring; light arrows are TransitionStep handoffs. Edge badge only when a pair repeats.</div>
+      <div id="topicTraceSlot"></div>
     </div>
     <div class="panel panel--fsm">
       <div class="panel-h">Induced FSM — <span id="fsmTopicLabel">select a topic</span></div>
@@ -1618,6 +1629,7 @@ function clearFsmPanel() {
   document.getElementById('fsmTopicLabel').textContent = 'select a topic';
   document.getElementById('fsmWrap').innerHTML =
     '<div style="padding:20px;color:var(--text-dim);font-size:13px">Click a topic circle in the graph on the left.</div>';
+  document.getElementById('topicTraceSlot').innerHTML = '';
 }
 
 function renderTopicGraph(parsed) {
@@ -1816,7 +1828,7 @@ function svgTextLines(text, maxChars, sep) {
   return [text.length > maxW ? text.slice(0, maxW - 1) + '…' : text];
 }
 
-function makeEventCardEl(ev, anim, isPast) {
+function makeEventCardEl(ev, anim, isPast, isCurrent) {
   const kindClass =
     {
       variable: 'var',
@@ -1833,12 +1845,14 @@ function makeEventCardEl(ev, anim, isPast) {
   const macroCls = ev.badgeIsMacro === false ? '' : ' fsm-ev-badge-macro';
   const tipAttr = ev.badgeTitle != null ? ` title="${esc(ev.badgeTitle)}"` : '';
   const div = document.createElement('div');
-  div.className = 'fsm-event-card ' + kindClass + (isPast ? ' fsm-past' : '') + (anim ? ' fsm-anim' : '');
+  div.className = 'fsm-event-card ' + kindClass + (isPast ? ' fsm-past' : '') + (isCurrent ? ' fsm-current' : '') + (anim ? ' fsm-anim' : '');
+  const currentLabel = isCurrent ? '<span class="fsm-current-label">CURRENT</span>' : '';
   div.innerHTML = `
     <div class="fsm-ev-title">
       <span>${esc(ev.title)}</span>
       <span class="fsm-ev-badge${macroCls}"${tipAttr}>${esc(badgeRaw)}</span>
       <span class="fsm-ev-step">plan[${ev.stepIndex}]</span>
+      ${currentLabel}
     </div>
     ${ev.subtitle ? `<div class="fsm-ev-sub">${ev.subtitle}</div>` : ''}
     <div class="fsm-ev-body">${ensureEventBody(ev)}</div>
@@ -1849,7 +1863,13 @@ function makeEventCardEl(ev, anim, isPast) {
 function rebuildFsmFeedFromZero(feed, idx, animateLatest) {
   feed.innerHTML = '';
   for (let k = 0; k <= idx; k++) {
-    feed.appendChild(makeEventCardEl(fsmPlayback.events[k], animateLatest && k === idx, k < idx));
+    if (k === idx && idx > 0) {
+      const divider = document.createElement('div');
+      divider.className = 'fsm-history-divider';
+      divider.textContent = 'history';
+      feed.appendChild(divider);
+    }
+    feed.appendChild(makeEventCardEl(fsmPlayback.events[k], animateLatest && k === idx, k < idx, k === idx));
   }
   fsmPlayback.lastFeedIdx = idx;
   feed.scrollTop = feed.scrollHeight;
@@ -1870,13 +1890,44 @@ function setFsmPlaybackIndex(i, animateLatest) {
     if (lastR < 0 || idx < lastR - 1 || idx > lastR + 1) {
       rebuildFsmFeedFromZero(feed, idx, animateLatest);
     } else if (idx === lastR + 1) {
-      if (feed.lastElementChild) feed.lastElementChild.classList.add('fsm-past');
-      feed.appendChild(makeEventCardEl(fsmPlayback.events[idx], animateLatest, false));
+      const prevCurrent = feed.querySelector('.fsm-current');
+      if (prevCurrent) {
+        prevCurrent.classList.remove('fsm-current');
+        prevCurrent.classList.add('fsm-past');
+        const lbl = prevCurrent.querySelector('.fsm-current-label');
+        if (lbl) lbl.remove();
+      }
+      const oldDivider = feed.querySelector('.fsm-history-divider');
+      if (oldDivider) oldDivider.remove();
+      const divider = document.createElement('div');
+      divider.className = 'fsm-history-divider';
+      divider.textContent = 'history';
+      feed.appendChild(divider);
+      feed.appendChild(makeEventCardEl(fsmPlayback.events[idx], animateLatest, false, true));
       fsmPlayback.lastFeedIdx = idx;
       feed.scrollTop = feed.scrollHeight;
     } else if (idx === lastR - 1) {
+      const oldDivider = feed.querySelector('.fsm-history-divider');
+      if (oldDivider) oldDivider.remove();
       if (feed.lastElementChild) feed.removeChild(feed.lastElementChild);
-      if (feed.lastElementChild) feed.lastElementChild.classList.remove('fsm-past');
+      const newCurrent = feed.lastElementChild;
+      if (newCurrent && newCurrent.classList.contains('fsm-event-card')) {
+        newCurrent.classList.remove('fsm-past');
+        newCurrent.classList.add('fsm-current');
+        const titleRow = newCurrent.querySelector('.fsm-ev-title');
+        if (titleRow && !newCurrent.querySelector('.fsm-current-label')) {
+          const lbl = document.createElement('span');
+          lbl.className = 'fsm-current-label';
+          lbl.textContent = 'CURRENT';
+          titleRow.appendChild(lbl);
+        }
+      }
+      if (idx > 0) {
+        const divider = document.createElement('div');
+        divider.className = 'fsm-history-divider';
+        divider.textContent = 'history';
+        feed.insertBefore(divider, newCurrent);
+      }
       fsmPlayback.lastFeedIdx = idx;
       feed.scrollTop = feed.scrollHeight;
     } else {
@@ -1960,13 +2011,6 @@ function setupSvgZoomPan(container) {
       y: state.y + (clientY - rect.top) / rect.height * state.h
     };
   }
-
-  svg.addEventListener('wheel', function(e) {
-    e.preventDefault();
-    const pt = svgPoint(e.clientX, e.clientY);
-    const factor = e.deltaY > 0 ? 1.12 : 0.89;
-    zoom(factor, pt.x, pt.y);
-  }, { passive: false });
 
   svg.addEventListener('pointerdown', function(e) {
     if (e.button !== 0) return;
@@ -2281,7 +2325,6 @@ function renderFsm(topicId, parsed) {
 
   const macroSlot = document.createElement('div');
   macroSlot.className = 'fsm-macro-slot';
-  panel.appendChild(macroSlot);
 
   if (trans && trans.size > 0) {
     const result = renderFsmMacroSvg(macroSlot, trans);
@@ -2293,17 +2336,22 @@ function renderFsm(topicId, parsed) {
       '<div style="padding:22px;font-size:12px;color:var(--text-dim);text-align:center;line-height:1.55">No macro FSM edges for this topic.<br><span style="font-size:11px;opacity:.88">The timeline below still lists matching steps.</span></div>';
   }
 
+  panel.appendChild(macroSlot);
+  el.appendChild(panel);
+
+  const traceSlot = document.getElementById('topicTraceSlot');
+  traceSlot.innerHTML = '';
+
   const detailSlot = document.createElement('div');
   detailSlot.className = 'fsm-detail-slot';
   detailSlot.id = 'fsmDetailSlot';
-  panel.appendChild(detailSlot);
+  traceSlot.appendChild(detailSlot);
 
   const timeline = document.createElement('div');
   timeline.className = 'fsm-timeline';
   timeline.innerHTML =
     '<div class="fsm-timeline-h">Trace stream <span id="fsmTimelineMeta" style="font-weight:400;opacity:.88"></span></div><div class="fsm-event-feed" id="fsmEventFeed"></div>';
-  panel.appendChild(timeline);
-  el.appendChild(panel);
+  traceSlot.appendChild(timeline);
 
   const n = fsmPlayback.events.length;
   const scrub = document.getElementById('fsmScrub');
