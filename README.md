@@ -1,39 +1,31 @@
 # AgentLens
 
-A zero-dependency, single-file visualizer for **Agentforce** agent traces.
+Understand what your Agentforce agent actually did — visually.
 
 **Try it now:** <https://msrivastav13.github.io/AgentLens/>
 
-Load a plan response from the **Agentforce DX** extension and instantly see:
+![AgentLens](images/output.png)
 
-- **Topic Graph** — directed graph of agent topic handoffs with transition counts
-- **State Machine Playback** — step through each topic's orchestration and tool-execution flow with full LLM detail
-- **Trace Stream** — filterable timeline of every plan step: LLM calls, tool executions, variable updates, reasoning iterations, and more
-- **Graph Analysis** — degree distribution, SCC/WCC decomposition, betweenness centrality, diameter, and prose insights
+## What it does
+
+Load a trace from the **Agentforce DX** extension and AgentLens shows you:
+
+- **Agent Graph** — which sub agents talked to each other, how many times, and in what order
+- **Finite State Machine** — the internal orchestration flow for each sub agent: LLM calls, tool executions, variable mutations, and handoffs
+- **Step-by-Step Inspector** — walk through every event with full detail: system prompts, model output, tool inputs/outputs, and variable diffs
+- **Graph Analysis Report** — one-click PDF with degree distribution, connectivity analysis, betweenness centrality, and algorithm explanations
 
 ## Quick Start
 
-1. Open `index.html` in any browser (works with `file://`, no server required).
-2. Click **Paste JSON** or **Upload** and provide the plan response JSON from the **Agentforce DX** extension.
-3. Click a topic node to explore its state machine and trace timeline.
+1. Open <https://msrivastav13.github.io/AgentLens/> (or `index.html` locally — no server required)
+2. Paste or upload the plan response JSON from the Agentforce DX extension
+3. Click a sub agent to explore its state machine and step through the trace
 
-An example trace is included in `example/trace.json`.
+## Why
 
-## Features
+Agentforce traces are large JSON blobs. Reading them raw is painful. AgentLens turns them into something you can actually navigate — so you can debug handoff loops, understand why an LLM chose a tool, or figure out where latency is hiding.
 
-| Feature | Details |
-|---|---|
-| Topic transitions | Ring layout with directed edges, multiplicity badges, self-loops |
-| FSM playback | Prev/Next/scrub through trace events; active state highlights |
-| Filters | Toggle variable updates, reasoning, node entry, enabled tools, `__` vars, `AgentScriptInternal_*` vars, full LLM bodies |
-| LLM detail | System prompt, messages sent, model output, tool calls, latency |
-| Function detail | Input/output JSON, execution latency |
-| Graph metrics | \|V\|, \|E\|, density, SCC, WCC, diameter, betweenness centrality |
-| Dark / Light mode | One-click theme toggle, preferences persist |
-
-## Screenshot
-
-![AgentLens](images/output.png)
+Zero dependencies. Runs entirely in the browser. Works offline.
 
 ## License
 
