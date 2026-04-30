@@ -32,9 +32,9 @@ html{height:100%}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,sans-serif;
   background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh;
   display:flex;flex-direction:column}
-body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
-.app-header{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;
-  display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
+body.app-viz{height:100vh;overflow:hidden}
+.app-header{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);padding:8px 20px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;z-index:100}
 .app-header h1{font-size:17px;font-weight:700;color:var(--text-bright)}
 .header-meta{display:flex;gap:12px;flex-wrap:wrap;flex:1}
 .meta-chip{font-size:11px;background:var(--surface2);border:1px solid var(--border);
@@ -44,84 +44,38 @@ body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
 .btn{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);
   color:var(--text);padding:6px 12px;font-size:12px;cursor:pointer;font-weight:500}
 .btn:hover{border-color:var(--blue);color:var(--blue)}
-#mainViz:not(.hidden){display:flex;flex-direction:column;flex:1;min-height:0}
-.layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(300px,1fr);gap:14px;max-width:1680px;width:100%;
-  margin:0 auto;padding:14px 16px;flex:1;min-height:min(600px,70vh);height:calc(100vh - 180px);align-items:stretch;
-  transition:grid-template-columns .3s ease}
+#mainViz:not(.hidden){display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+.layout{display:grid;grid-template-columns:1.1fr 1fr;gap:10px;max-width:1680px;width:100%;
+  margin:0 auto;padding:10px 16px;flex:1;min-height:0;align-items:stretch}
 @media(max-width:1024px){.layout{grid-template-columns:1fr;height:auto;min-height:0}}
+.panel--inspector{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.panel--inspector .fsm-playbar{flex-shrink:0}
+.panel--inspector .fsm-single-card{flex:1;overflow-y:auto;padding:14px 16px}
+.panel--context{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.panel--context .graph-wrap#fsmWrap{flex:1;min-height:0;overflow:hidden}
+.panel--context .topic-list{flex-shrink:0;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:4px;padding:6px 10px}
+.topic-pill{font-size:11px;padding:4px 10px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);
+  color:var(--text-dim);cursor:pointer;font-weight:500;transition:border-color .15s,color .15s,background .15s;white-space:nowrap}
+.topic-pill:hover{border-color:var(--blue);color:var(--blue)}
+.topic-pill.active{border-color:var(--cyan);color:var(--cyan);background:rgba(34,211,238,.1)}
+.light .topic-pill.active{border-color:var(--cyan);color:var(--cyan);background:rgba(8,145,178,.08)}
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
   overflow:hidden;display:flex;flex-direction:column;min-height:0;max-height:100%;transition:width .3s ease,min-width .3s ease}
 .panel-h{padding:10px 14px;border-bottom:1px solid var(--border);font-size:clamp(11px,1.4vw,13px);font-weight:700;
   color:var(--text-bright);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:space-between}
-.panel-collapse-btn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);
-  color:var(--text-dim);cursor:pointer;padding:3px 6px;display:flex;align-items:center;justify-content:center;
-  transition:color .15s,border-color .15s,transform .15s;flex-shrink:0}
-.panel-collapse-btn:hover{color:var(--blue);border-color:var(--blue)}
-.panel-collapse-btn svg{width:14px;height:14px;transition:transform .25s ease}
-.layout.topic-collapsed{grid-template-columns:auto 1fr}
-.layout.topic-collapsed .panel--topic{width:40px;min-width:40px;overflow:hidden}
-.layout.topic-collapsed .panel--topic .panel-h{writing-mode:vertical-rl;text-orientation:mixed;white-space:nowrap;
-  padding:12px 10px;border-bottom:none;border-right:1px solid var(--border);flex-direction:column;gap:10px;
-  height:100%;justify-content:flex-start;align-items:center}
-.layout.topic-collapsed .panel--topic .panel-h .panel-h-text{order:1}
-.layout.topic-collapsed .panel--topic .panel-h .panel-collapse-btn{order:0;transform:none;writing-mode:horizontal-tb}
-.layout.topic-collapsed .panel--topic .graph-wrap,
-.layout.topic-collapsed .panel--topic .panel-note,
-.layout.topic-collapsed .panel--topic #topicTraceSlot{display:none}
-.layout.topic-collapsed .panel-collapse-btn svg{transform:rotate(180deg)}
-
-.layout.topic-collapsed .panel--fsm .fsm-playbar{padding:12px 18px;gap:10px}
-.layout.topic-collapsed .panel--fsm .fsm-playbar .fsm-playbar-title{font-size:12px}
-.layout.topic-collapsed .panel--fsm .fsm-playbar select,
-.layout.topic-collapsed .panel--fsm .fsm-playbar .btn-fsm{font-size:12px;padding:6px 14px}
-.layout.topic-collapsed .panel--fsm .fsm-macro-slot{min-height:260px;max-height:min(55vh,560px)}
-.layout.topic-collapsed .panel--fsm .fsm-detail-slot{padding:16px 20px;font-size:13px;max-height:min(36vh,360px)}
-.layout.topic-collapsed .panel--fsm .fsm-detail-h{font-size:12px;margin-bottom:10px}
-.layout.topic-collapsed .panel--fsm .fsm-detail-h .fsm-detail-badge{font-size:10px;padding:3px 10px}
-.layout.topic-collapsed .panel--fsm .fsm-detail-section-h{font-size:10px}
-.layout.topic-collapsed .panel--fsm .fsm-detail-var{padding:10px 14px}
-.layout.topic-collapsed .panel--fsm .fsm-detail-var-name{font-size:12px}
-.layout.topic-collapsed .panel--fsm .fsm-detail-var-val{font-size:12px}
-.layout.topic-collapsed .panel--fsm .fsm-detail-prompt-buf{font-size:12px;padding:12px 14px;max-height:240px}
-.layout.topic-collapsed .panel--fsm .fsm-detail-response{font-size:13px;padding:14px 18px;line-height:1.7}
-.layout.topic-collapsed .panel--fsm .fsm-detail-reason{font-size:13px;padding:12px 16px;line-height:1.6}
-.layout.topic-collapsed .panel--fsm .fsm-detail-exec pre{font-size:12px;max-height:220px}
-.layout.topic-collapsed .panel--fsm .fsm-detail-meta{font-size:11px}
-.layout.topic-collapsed .panel--fsm .fsm-timeline-h{font-size:12px;padding:10px 16px}
-.layout.topic-collapsed .panel--fsm .fsm-event-feed{padding:14px 18px 18px;gap:12px}
-.layout.topic-collapsed .panel--fsm .fsm-event-card{padding:14px 18px;font-size:13px;line-height:1.55}
-.layout.topic-collapsed .panel--fsm .fsm-event-card .fsm-ev-title{font-size:14px;gap:10px;margin-bottom:6px}
-.layout.topic-collapsed .panel--fsm .fsm-event-card .fsm-ev-badge{font-size:10px;padding:3px 10px}
-.layout.topic-collapsed .panel--fsm .fsm-event-card .fsm-ev-sub{font-size:12px;margin-bottom:8px}
-.layout.topic-collapsed .panel--fsm .fsm-event-card .fsm-ev-step{font-size:11px}
-.layout.topic-collapsed .panel--fsm .fsm-var-ul code{font-size:12px}
-.layout.topic-collapsed .panel--fsm .fsm-kv{font-size:12px}
-.layout.topic-collapsed .panel--fsm .fsm-chip{font-size:11px;padding:4px 10px}
-.layout.topic-collapsed .panel--fsm .fsm-pre{font-size:12px;max-height:180px;padding:10px 12px}
-.layout.topic-collapsed .panel--fsm .fsm-llm-h{font-size:10px}
-.layout.topic-collapsed .panel--fsm .fsm-msg-bubble{font-size:12px;padding:10px 14px;max-height:240px;line-height:1.55}
-.layout.topic-collapsed .panel--fsm .fsm-msg-role{font-size:10px}
-.layout.topic-collapsed .panel--fsm .fsm-msg-body{font-size:12px}
-.layout.topic-collapsed .panel--fsm .panel-h{font-size:14px}
-.layout.topic-collapsed .panel--fsm .panel-note{font-size:13px;padding:12px 18px}
 .graph-wrap{flex:1;width:100%;min-height:200px;background:var(--surface2);position:relative;touch-action:none}
 .graph-wrap#topicGraph{
-  flex:1 1 auto;min-height:min(22vh,220px);max-height:min(36vh,360px);
-  display:flex;align-items:center;justify-content:center;min-width:0}
-.graph-wrap#topicGraph svg{display:block;width:100%;height:auto;max-height:100%;cursor:default;flex-shrink:0}
+  flex:0 0 auto;min-height:120px;max-height:min(22vh,200px);
+  overflow:hidden;position:relative;min-width:0}
+.graph-wrap#topicGraph svg{display:block;width:100%;height:100%;cursor:grab}
+.graph-wrap#topicGraph svg.panning{cursor:grabbing}
 .graph-wrap svg{display:block;width:100%;height:100%;cursor:default}
-.panel--fsm{min-height:0;align-self:stretch;width:100%;display:flex;flex-direction:column;overflow-y:auto}
 .graph-wrap#fsmWrap{flex:1 1 auto;min-height:0;height:auto!important;max-height:none;display:flex;flex-direction:column;overflow:hidden}
-.fsm-panel{display:flex;flex-direction:column;flex:1;min-height:0;height:100%}
-.panel--topic{overflow-y:auto!important}
-#topicTraceSlot{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;overflow:hidden}
 .fsm-playbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
-.fsm-playbar .fsm-playbar-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);width:100%;margin-bottom:2px}
-.fsm-playbar input[type=range]{flex:1;min-width:120px;accent-color:var(--cyan)}
 .fsm-playbar select,.fsm-playbar .btn-fsm{font-size:12px;padding:6px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer}
 .fsm-playbar .btn-fsm{font-weight:600}
 .fsm-playbar .btn-fsm:hover{border-color:var(--blue);color:var(--blue)}
-.fsm-macro-slot{flex:0 0 auto;min-height:220px;max-height:min(50vh,520px);background:var(--surface2);border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.fsm-macro-slot{flex:1;min-height:160px;background:var(--surface2);border-bottom:1px solid var(--border);position:relative;overflow:hidden}
 .fsm-macro-slot svg{display:block;width:100%;height:100%;cursor:grab}
 .fsm-macro-slot svg.panning{cursor:grabbing}
 .fsm-zoom-controls{position:absolute;top:8px;right:8px;display:flex;gap:4px;z-index:10}
@@ -130,8 +84,8 @@ body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
   align-items:center;justify-content:center;opacity:.85;transition:opacity .15s,border-color .15s}
 .fsm-zoom-btn:hover{opacity:1;border-color:var(--blue);color:var(--blue)}
 .fsm-zoom-level{font-size:10px;color:var(--text-dim);font-family:var(--font-mono);align-self:center;padding:0 4px;user-select:none}
-.fsm-detail-slot{flex:0 0 auto;min-height:0;max-height:min(30vh,280px);overflow-y:auto;background:var(--surface);
-  border-bottom:1px solid var(--border);padding:12px 14px;font-size:clamp(11px,1.3vw,13px);line-height:1.5}
+.fsm-detail-slot{flex:1;min-height:0;overflow-y:auto;background:var(--surface);
+  padding:14px 16px;font-size:clamp(11px,1.3vw,13px);line-height:1.5}
 .fsm-detail-slot:empty{display:none}
 .fsm-detail-h{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.55px;color:var(--text-dim);margin:0 0 8px;display:flex;align-items:center;gap:8px}
 .fsm-detail-h .fsm-detail-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--border);background:var(--surface2)}
@@ -163,40 +117,6 @@ body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
 .fsm-detail-slot .fsm-pre{max-height:240px}
 .fsm-detail-slot .fsm-msg-bubble{max-height:240px}
 .fsm-detail-meta{font-size:11px;color:var(--text-dim);font-family:var(--font-mono);margin-bottom:8px}
-.fsm-timeline{flex:1 1 auto;min-height:120px;display:flex;flex-direction:column;background:var(--surface2);overflow:hidden}
-.fsm-timeline-h{padding:8px 12px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);border-bottom:1px solid var(--border)}
-.fsm-event-feed{flex:1;overflow-y:auto;padding:10px 12px 14px;display:flex;flex-direction:column;gap:10px}
-.fsm-event-card{border-radius:var(--radius-sm);padding:10px 12px;font-size:clamp(11px,1.3vw,13px);line-height:1.45;border:1px solid var(--border);background:var(--surface);box-shadow:0 1px 0 rgba(0,0,0,.06);transition:opacity .2s,filter .2s,border-color .2s,box-shadow .2s}
-.fsm-event-card.fsm-anim{animation:fsmCardIn .4s cubic-bezier(.22,1,.36,1) both}
-.fsm-event-card.fsm-past{opacity:.35;filter:grayscale(.25);transform:scale(.98);transform-origin:left top}
-.fsm-event-card.fsm-current{border-left:3px solid var(--cyan);box-shadow:0 0 12px rgba(34,211,238,.25),0 2px 8px rgba(0,0,0,.1);position:relative}
-.light .fsm-event-card.fsm-current{box-shadow:0 0 10px rgba(8,145,178,.2),0 2px 8px rgba(0,0,0,.06)}
-.fsm-current-label{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.3);border-radius:4px;padding:1px 6px;margin-left:auto}
-.light .fsm-current-label{color:rgba(8,145,178,1);background:rgba(8,145,178,.08);border-color:rgba(8,145,178,.25)}
-.fsm-history-divider{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);opacity:.6}
-.fsm-history-divider::before,.fsm-history-divider::after{content:'';flex:1;height:1px;background:var(--border)}
-.fsm-history-divider::before{max-width:40px}
-.fsm-event-card .fsm-ev-title{font-weight:700;color:var(--text-bright);font-size:clamp(12px,1.4vw,14px);margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.fsm-event-card .fsm-ev-badge{font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 8px;border-radius:999px;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);max-width:min(240px,46vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fsm-event-card .fsm-ev-badge.fsm-ev-badge-macro{text-transform:uppercase}
-.fsm-event-card .fsm-ev-sub{font-size:11px;color:var(--text-dim);margin-bottom:6px;font-family:var(--font-mono)}
-.fsm-event-card .fsm-ev-step{font-size:11px;color:var(--cyan);font-family:var(--font-mono)}
-.fsm-event-card.var{border-color:var(--purple-border);background:var(--purple-bg)}
-.fsm-event-card.var .fsm-ev-badge{color:var(--purple);border-color:var(--purple-border);background:rgba(167,139,250,.08)}
-.fsm-event-card.tool{border-color:rgba(45,212,191,.35);background:rgba(45,212,191,.08)}
-.fsm-event-card.tool .fsm-ev-badge{color:var(--teal);border-color:rgba(45,212,191,.35)}
-.fsm-event-card.action{border-color:var(--orange-border);background:var(--orange-bg)}
-.fsm-event-card.action .fsm-ev-badge{color:var(--orange);border-color:var(--orange-border)}
-.fsm-event-card.exec{border-color:var(--green-border);background:var(--green-bg)}
-.fsm-event-card.exec .fsm-ev-badge{color:var(--green);border-color:var(--green-border)}
-.fsm-event-card.entry .fsm-ev-badge{color:var(--blue);border-color:var(--blue-border)}
-.fsm-event-card.user{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.08)}
-.fsm-event-card.transition{border-color:var(--orange-border);background:var(--orange-bg)}
-.fsm-event-card.transition .fsm-ev-badge{color:var(--orange);border-color:var(--orange-border)}
-.fsm-event-card.response{border-color:rgba(34,211,238,.3);background:rgba(34,211,238,.06)}
-.fsm-var-ul{margin:0;padding-left:16px;color:var(--text)}
-.fsm-var-ul li{margin:6px 0}
-.fsm-var-ul code{font-family:var(--font-mono);font-size:12px;color:var(--purple)}
 .fsm-kv{font-size:12px;color:var(--text-dim);margin:2px 0 0;font-family:var(--font-mono);word-break:break-word}
 .fsm-chips{display:flex;flex-wrap:wrap;gap:6px}
 .fsm-chip{font-size:11px;padding:4px 9px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);font-family:var(--font-mono)}
@@ -213,9 +133,6 @@ body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
 .fsm-msg-tool{background:rgba(45,212,191,.1);border-color:rgba(45,212,191,.35)}
 .light .fsm-msg-tool{background:rgba(13,148,136,.08);border-color:rgba(13,148,136,.25)}
 .fsm-msg-body{white-space:pre-wrap;word-break:break-word;font-family:var(--font-mono)}
-.light .fsm-event-card.exec{background:rgba(5,150,105,.06)}
-.light .fsm-event-card.var{background:rgba(124,58,237,.06)}
-@keyframes fsmCardIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
 .svg-graph.fsm .fsm-node.dim rect{opacity:.32}
 .svg-graph.fsm .fsm-node.active rect{opacity:1;stroke:var(--cyan)!important;stroke-width:3px;filter:drop-shadow(0 0 12px rgba(34,211,238,.45))}
 .light .svg-graph.fsm .fsm-node.active rect{filter:drop-shadow(0 0 10px rgba(8,145,178,.4))}
@@ -250,30 +167,14 @@ body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
 .light .svg-graph.fsm .fsm-node.fsm-node--process rect{stroke:var(--purple);fill:rgba(124,58,237,.06)}
 .light .svg-graph.fsm .fsm-node.fsm-node--llm rect{fill:rgba(37,99,235,.06)}
 .light .svg-graph.fsm .fsm-node.fsm-node--handoff rect{stroke:var(--orange);fill:rgba(251,146,60,.06)}
-.panel-note{padding:10px 14px;font-size:clamp(10px,1.1vw,12px);color:var(--text-dim);border-top:1px solid var(--border)}
-.metrics-card{flex-shrink:0;margin:0 16px 16px;padding:0;background:var(--surface2);border:1px solid var(--border);
-  border-radius:var(--radius-sm);font-size:12px;overflow:hidden}
-.metrics-details>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;
-  padding:10px 14px;user-select:none}
-.metrics-details>summary::-webkit-details-marker{display:none}
-.metrics-details>summary::after{content:'▸';font-size:10px;color:var(--text-dim);margin-left:8px;transition:transform .15s;flex-shrink:0}
-.metrics-details[open]>summary::after{transform:rotate(90deg)}
-.metrics-details>summary:hover{background:rgba(78,140,255,.06)}
-.exec-stats-strip{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:11px;color:var(--text-dim);flex:1;min-width:0}
+.metrics-bar{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);
+  padding:4px 20px;font-size:11px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.metrics-bar.hidden{display:none}
+.exec-stats-strip{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:11px;color:var(--text-dim)}
 .exec-stats-strip b{color:var(--text);font-weight:600}
-.metrics-summary-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.55px;color:var(--text-dim);flex-shrink:0}
-.metrics-details-inner{padding:0 14px 14px}
-.metrics-card h3{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:8px}
-.metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
-.metric-val{font-family:var(--font-mono);color:var(--cyan);font-weight:600}
-.metrics-prose{margin-top:10px;color:var(--text);line-height:1.65}
-.metrics-prose p{margin-top:6px}
-.deg-table{width:100%;font-size:11px;border-collapse:collapse;margin-top:8px}
-.deg-table th,.deg-table td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--border)}
-.deg-table th{color:var(--text-dim);font-weight:600}
-.viz-toolbar{background:var(--surface);border:1px solid var(--border);padding:8px 16px;margin:0 16px 8px;border-radius:var(--radius-sm);
-  display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
-.viz-toolbar .viz-toolbar-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);width:100%}
+.viz-toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:6px 16px;
+  display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.viz-toolbar .viz-toolbar-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim)}
 .viz-toolbar label{font-size:11px;color:var(--text);display:inline-flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap}
 .viz-toolbar input[type=checkbox]{accent-color:var(--blue);flex-shrink:0}
 
@@ -299,17 +200,8 @@ body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
   border:1px solid rgba(248,113,113,.4);color:var(--red);padding:10px 18px;border-radius:var(--radius);z-index:300}
 
 @media(max-width:1024px){
-  .layout{padding:10px 12px;gap:10px}
-  .panel{max-height:none}
-  .panel:first-child{max-height:380px}
-  .panel--fsm{overflow-y:visible}
-  .graph-wrap#topicGraph{min-height:180px;max-height:320px}
-  .fsm-macro-slot{min-height:180px;max-height:min(45vh,420px)}
-  .fsm-detail-slot{max-height:min(28vh,240px)}
-  .fsm-timeline{min-height:160px}
-  .metrics-card{margin:0 12px 10px}
-  .viz-toolbar{margin:0 12px 6px;padding:6px 12px;gap:6px 10px}
-  .panel-note{font-size:11px;padding:8px 12px}
+  .layout{padding:10px 12px;gap:10px;grid-template-columns:1fr;height:auto}
+  .panel--context{max-height:340px}
 }
 
 @media(max-width:768px){
@@ -320,19 +212,10 @@ body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
   .header-actions .btn{padding:5px 10px;font-size:11px}
   .layout{padding:8px 10px;gap:8px}
   .panel-h{padding:8px 12px;font-size:clamp(11px,1.4vw,13px)}
-  .graph-wrap#topicGraph{min-height:160px;max-height:280px}
-  .fsm-macro-slot{min-height:160px;max-height:min(40vh,360px)}
-  .fsm-detail-slot{max-height:min(25vh,200px);padding:10px 12px}
   .fsm-playbar{padding:8px 10px;gap:6px}
-  .fsm-event-feed{padding:8px 10px 12px;gap:8px}
-  .fsm-event-card{padding:8px 10px}
-  .viz-toolbar{margin:0 10px 6px;padding:6px 10px;gap:4px 8px}
   .viz-toolbar label{font-size:10px;gap:4px}
-  .viz-toolbar .viz-toolbar-title{font-size:10px;margin-bottom:2px}
-  .metrics-card{margin:0 10px 8px}
-  .exec-stats-strip{font-size:10px;gap:6px 10px}
-  .metrics-summary-label{font-size:10px}
-  .panel-note{font-size:10px;padding:6px 10px}
+  .viz-toolbar .viz-toolbar-title{font-size:10px}
+  .exec-stats-strip{font-size:10px;gap:4px 8px}
 }
 </style>
 </head>
@@ -347,10 +230,11 @@ body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
     <button class="btn hidden" id="btnClear">Clear</button>
   </div>
 </div>
+<div class="metrics-bar hidden" id="metricsCard"></div>
 
 <div id="mainEmpty" class="empty-state">
   <h2>Visualize any Agentforce agent trace</h2>
-  <p>Load a plan response from the <strong>Agentforce DX</strong> extension, then explore topic handoffs, state machines, and LLM calls — all in one view.</p>
+  <p>Load a plan response from the <strong>Agentforce DX</strong> extension, then explore sub agent handoffs, finite state machines, and LLM calls — all in one view.</p>
   <p style="font-size:12px;max-width:520px;margin:12px auto 0">Zero dependencies — runs entirely in the browser. Works with <code>file://</code> and local servers alike.</p>
   <button class="btn-large" id="btnPaste">Paste JSON</button>
   <label class="btn-large" style="display:inline-block;background:var(--surface2);color:var(--text);border-color:var(--border)">
@@ -360,32 +244,31 @@ body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
 </div>
 
 <div id="mainViz" class="hidden">
-  <div class="viz-toolbar" id="vizToolbar">
-    <span class="viz-toolbar-title">FSM trace detail (checked = show)</span>
-    <label title="VariableUpdateStep"><input type="checkbox" id="chkVarUpdates" /> Variable updates</label>
-    <label title="Prep / planner / reasoning steps"><input type="checkbox" id="chkReasoning" /> Reasoning &amp; prep</label>
-    <label title="NodeEntryStateStep"><input type="checkbox" id="chkNodeEntry" /> Node entry</label>
-    <label title="EnabledToolsStep"><input type="checkbox" id="chkEnabledTools" /> Enabled tools</label>
-    <label title="Internal script variables"><input type="checkbox" id="chkAgentScriptVars" /> Show AgentScriptInternal_*</label>
-    <label title="Full prompts and messages"><input type="checkbox" id="chkFullLlm" checked /> Full LLM bodies</label>
-  </div>
-  <div class="metrics-card" id="metricsCard"></div>
   <div class="layout">
-    <div class="panel panel--topic" id="topicPanel">
-      <div class="panel-h">
-        <span class="panel-h-text">Topic graph (transitions)</span>
-        <button class="panel-collapse-btn" id="btnCollapseTopics" title="Collapse topic graph">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
+    <div class="panel panel--inspector" id="inspectorPanel">
+      <div class="panel-h"><span id="fsmTopicLabel" style="opacity:.5">select a sub agent →</span></div>
+      <div class="viz-toolbar" id="vizToolbar">
+        <span class="viz-toolbar-title">Show:</span>
+        <label title="Variable assignment and mutation steps"><input type="checkbox" id="chkVarUpdates" checked /> Variable Updates</label>
+        <label title="Planner reasoning, grounding checks, and prep actions"><input type="checkbox" id="chkReasoning" checked /> Reasoning</label>
+        <label title="State captured when entering a node"><input type="checkbox" id="chkNodeEntry" checked /> Node Entry</label>
+        <label title="Tools made available to the LLM at each step"><input type="checkbox" id="chkEnabledTools" checked /> Enabled Tools</label>
+        <label title="AgentScriptInternal_* system variables (usually noisy)"><input type="checkbox" id="chkAgentScriptVars" /> Internal Vars</label>
       </div>
-      <div class="graph-wrap" id="topicGraph"></div>
-      <div class="panel-note">Topics (normalized ids) on a ring; light arrows are TransitionStep handoffs. Edge badge only when a pair repeats.</div>
-      <div id="topicTraceSlot"></div>
+      <div class="fsm-playbar" id="inspectorPlaybar" style="display:none">
+        <button type="button" class="btn-fsm" id="fsmBtnPrev" title="Previous event (← or K)">← Prev</button>
+        <span id="fsmStepLabel" style="font-size:12px;font-family:var(--font-mono);color:var(--text-dim);white-space:nowrap">—</span>
+        <button type="button" class="btn-fsm" id="fsmBtnNext" title="Next event (→ or J)">Next →</button>
+        <span style="font-size:10px;color:var(--text-dim);margin-left:auto">← → keys</span>
+      </div>
+      <div class="fsm-single-card" id="fsmDetailSlot"></div>
     </div>
-    <div class="panel panel--fsm">
-      <div class="panel-h">Induced FSM — <span id="fsmTopicLabel">select a topic</span></div>
+    <div class="panel panel--context" id="contextPanel">
+      <div class="panel-h">Agent Graph</div>
+      <div class="graph-wrap" id="topicGraph"></div>
+      <div class="topic-list" id="topicList"></div>
+      <div class="panel-h" style="font-size:11px">Finite State Machine — <span id="fsmDiagramLabel" style="font-weight:400;color:var(--text-dim)">select a sub agent</span></div>
       <div class="graph-wrap" id="fsmWrap"></div>
-      <div class="panel-note">Flowchart: rounded rects = FSM states, dashed rect = Topic Setup (orchestration). Teal dashed back-edges = LLM↔Tool loop. Step detail panel shows variable/prompt changes, LLM requests, and responses.</div>
     </div>
   </div>
 </div>
@@ -403,13 +286,12 @@ body.app-viz{min-height:100vh;overflow-x:hidden;overflow-y:auto}
 
 <script>
 const LS_FILTERS = 'afViz2.filters';
-const LS_METRICS_OPEN = 'afViz2.metricsOpen';
 
 let currentData = null;
 let analysis = null;
 let vizParsed = null;
 let selectedTopicId = null;
-let fsmPlayback = { events: [], rawEvents: [], idx: -1, lastFeedIdx: -1, nodeMap: null, edgePathMap: null };
+let fsmPlayback = { events: [], rawEvents: [], idx: -1, nodeMap: null, edgePathMap: null };
 let fsmKeyNavHandler = null;
 
 function detachFsmKeyboardNav() {
@@ -437,12 +319,11 @@ function attachFsmKeyboardNav() {
 }
 
 const timelineFilterPrefs = {
-  varUpdates: false,
-  reasoning: false,
-  nodeEntry: false,
-  enabledTools: false,
+  varUpdates: true,
+  reasoning: true,
+  nodeEntry: true,
+  enabledTools: true,
   showAgentScriptVars: false,
-  fullLlm: true,
 };
 
 function loadTimelineFilterPrefs() {
@@ -473,7 +354,6 @@ function syncFilterUiFromPrefs() {
     chkNodeEntry: 'nodeEntry',
     chkEnabledTools: 'enabledTools',
     chkAgentScriptVars: 'showAgentScriptVars',
-    chkFullLlm: 'fullLlm',
   };
   for (const [id, key] of Object.entries(m)) {
     const el = document.getElementById(id);
@@ -487,12 +367,8 @@ function readFilterUiToPrefs() {
   timelineFilterPrefs.nodeEntry = !!document.getElementById('chkNodeEntry')?.checked;
   timelineFilterPrefs.enabledTools = !!document.getElementById('chkEnabledTools')?.checked;
   timelineFilterPrefs.showAgentScriptVars = !!document.getElementById('chkAgentScriptVars')?.checked;
-  timelineFilterPrefs.fullLlm = !!document.getElementById('chkFullLlm')?.checked;
 }
 
-function bodyCacheSig() {
-  return [timelineFilterPrefs.fullLlm, timelineFilterPrefs.showAgentScriptVars].join(',');
-}
 
 function stepDurationMs(step) {
   const a = step.startExecutionTime;
@@ -757,82 +633,10 @@ function formatFsmLlmStepBody(step) {
   return html;
 }
 
-function formatFsmLlmStepBodyCompact(step) {
-  const d = step.data || {};
-  const lat = d.execution_latency != null ? `${esc(String(d.execution_latency))} ms` : '';
-  const parts = [d.agent_name && esc(String(d.agent_name)), d.prompt_name && esc(String(d.prompt_name)), lat].filter(Boolean);
-  let html = '<div class="fsm-llm-section"><div class="fsm-llm-h">Tools available to the model</div>';
-  html += renderToolChipsHtml(step.tools_sent || []);
-  html += `</div><div class="fsm-kv" style="margin-top:8px">${parts.join(' · ') || '—'}</div>`;
-  html += '<div class="fsm-llm-section" style="margin-top:10px"><div class="fsm-llm-h">Model output (compact)</div>';
-  html += renderResponseMessagesHtml(step.response_messages || [], 72, 200);
-  html += '</div><div class="fsm-kv" style="margin-top:8px;opacity:.85">Enable <strong>Full LLM bodies</strong> for system prompt and full messages.</div>';
-  return html;
-}
 
-function buildVariableEventBody(step, prefs) {
-  const updates = step.data?.variable_updates || [];
-  if (!updates.length) return '<div class="fsm-kv">(empty variable_updates)</div>';
-  const vis = filterVariableUpdates(updates, prefs);
-  let html = '<ul class="fsm-var-ul">';
-  for (const u of vis) {
-    html += `<li><code>${esc(String(u.variable_name || ''))}</code>`;
-    html += `<div class="fsm-kv">← ${esc(truncateJSON(u.variable_past_value, 100))}</div>`;
-    html += `<div class="fsm-kv">→ ${esc(truncateJSON(u.variable_new_value, 100))}</div>`;
-    if (u.variable_change_reason) html += `<div class="fsm-kv">${esc(truncateJSON(u.variable_change_reason, 120))}</div>`;
-    html += '</li>';
-  }
-  html += '</ul>';
-  return html;
-}
 
-function buildEventBody(ev, step) {
-  const d = step.data || {};
-  switch (ev.kind) {
-    case 'transition':
-      return `<div class="fsm-kv">To agent: <strong>${esc(String(d.to_agent || ''))}</strong></div><div class="fsm-kv">${esc(String(d.transition_type || ''))} · ${esc(String(d.transition_mode || ''))}</div>`;
-    case 'user':
-      return `<div class="fsm-pre" style="max-height:100px">${esc(step.message || '')}</div>`;
-    case 'entry': {
-      const nKeys = d.state_variables && typeof d.state_variables === 'object' ? Object.keys(d.state_variables).length : 0;
-      return `<div class="fsm-kv">${nKeys} state variable keys captured on entry.</div>`;
-    }
-    case 'variable':
-      return buildVariableEventBody(step, timelineFilterPrefs);
-    case 'action': {
-      const names = (d.action_names || []).map(x => esc(String(x))).join('<br>') || '—';
-      return `<div class="fsm-mono" style="font-family:var(--font-mono);font-size:10px;line-height:1.5">${names}</div>`;
-    }
-    case 'enabled': {
-      const tools = (d.enabled_tools || []).map(x => `<span class="fsm-chip">${esc(String(x))}</span>`).join(' ');
-      return `<div class="fsm-chips">${tools || '—'}</div>`;
-    }
-    case 'llm_sent':
-      return timelineFilterPrefs.fullLlm ? formatFsmLlmStepBody(step) : formatFsmLlmStepBodyCompact(step);
-    case 'execute': {
-      const fn = step.function || {};
-      const fnName = fn.name != null ? String(fn.name) : '';
-      return `${fnName ? `<div class="fsm-kv" style="margin-bottom:6px"><strong>${esc(fnName)}</strong></div>` : ''}<pre class="fsm-pre">${esc(truncateJSON(fn.input, 350))}</pre><div class="fsm-kv" style="margin-top:6px">Output</div><pre class="fsm-pre">${esc(truncateJSON(fn.output, 450))}</pre>${
-        step.executionLatency != null ? `<div class="fsm-kv">Latency: ${esc(String(step.executionLatency))} ms</div>` : ''
-      }`;
-    }
-    case 'response':
-      return `<div class="fsm-kv">${esc(truncateJSON(d, 200))}</div>`;
-    default:
-      return '';
-  }
-}
 
-function ensureEventBody(ev) {
-  const sig = bodyCacheSig();
-  if (ev._body != null && ev._bodySig === sig) return ev._body;
-  const plan = currentData && currentData.plan;
-  if (!plan || ev.stepIndex == null) return '';
-  const step = plan[ev.stepIndex];
-  ev._body = buildEventBody(ev, step);
-  ev._bodySig = sig;
-  return ev._body;
-}
+
 
 function prettyJSON(obj, limit) {
   try {
@@ -848,8 +652,8 @@ function buildFsmDetailHtml(ev, step) {
   switch (ev.kind) {
     case 'variable': {
       const updates = d.variable_updates || [];
-      if (!updates.length) return '<div class="fsm-detail-h">Topic Setup <span class="fsm-detail-badge badge-purple">Variable Update</span></div><div class="fsm-kv">(empty)</div>';
-      let html = '<div class="fsm-detail-h">Topic Setup <span class="fsm-detail-badge badge-purple">Variable Update</span></div>';
+      if (!updates.length) return '<div class="fsm-detail-h">Sub Agent Setup <span class="fsm-detail-badge badge-purple">Variable Update</span></div><div class="fsm-kv">(empty)</div>';
+      let html = '<div class="fsm-detail-h">Sub Agent Setup <span class="fsm-detail-badge badge-purple">Variable Update</span></div>';
       const promptVar = 'AgentScriptInternal_agent_instructions';
       const promptUpdates = updates.filter(u => String(u.variable_name || '') === promptVar);
       const otherUpdates = updates.filter(u => String(u.variable_name || '') !== promptVar);
@@ -878,7 +682,7 @@ function buildFsmDetailHtml(ev, step) {
       return html;
     }
     case 'action': {
-      let html = '<div class="fsm-detail-h">Topic Setup <span class="fsm-detail-badge badge-purple">Actions Processed</span></div>';
+      let html = '<div class="fsm-detail-h">Sub Agent Setup <span class="fsm-detail-badge badge-purple">Actions Processed</span></div>';
       const names = d.action_names || [];
       if (names.length) {
         html += '<div class="fsm-detail-section"><div class="fsm-detail-section-h">Actions</div>';
@@ -888,13 +692,13 @@ function buildFsmDetailHtml(ev, step) {
       return html;
     }
     case 'enabled': {
-      let html = '<div class="fsm-detail-h">Topic Setup <span class="fsm-detail-badge badge-purple">Enabled Tools</span></div>';
+      let html = '<div class="fsm-detail-h">Sub Agent Setup <span class="fsm-detail-badge badge-purple">Enabled Tools</span></div>';
       const tools = d.enabled_tools || [];
       html += `<div class="fsm-chips" style="margin-top:6px">${tools.map(x => `<span class="fsm-chip">${esc(String(x))}</span>`).join(' ') || '\u2014'}</div>`;
       return html;
     }
     case 'entry': {
-      let html = '<div class="fsm-detail-h">Topic Setup <span class="fsm-detail-badge badge-blue">Node Entry</span></div>';
+      let html = '<div class="fsm-detail-h">Sub Agent Setup <span class="fsm-detail-badge badge-blue">Node Entry</span></div>';
       const sv = d.state_variables;
       if (sv && typeof sv === 'object') {
         const keys = Object.keys(sv);
@@ -965,7 +769,7 @@ function buildFsmDetailHtml(ev, step) {
       return html;
     }
     case 'transition': {
-      let html = '<div class="fsm-detail-h">Topic Handoff <span class="fsm-detail-badge badge-orange">Transition</span></div>';
+      let html = '<div class="fsm-detail-h">Sub Agent Handoff <span class="fsm-detail-badge badge-orange">Transition</span></div>';
       html += `<div class="fsm-kv">To: <strong>${esc(String(d.to_agent || ''))}</strong></div>`;
       html += `<div class="fsm-kv">${esc(String(d.transition_type || ''))} \u00b7 ${esc(String(d.transition_mode || ''))}</div>`;
       if (d.from_agent) html += `<div class="fsm-kv">From: ${esc(String(d.from_agent))}</div>`;
@@ -976,10 +780,8 @@ function buildFsmDetailHtml(ev, step) {
   }
 }
 
-function makeTimelineEvent(stepIndex, t, macro, kind, title, subtitle, extra) {
-  const ev = { stepIndex, t, macro, kind, title, subtitle, _body: null, _bodySig: null };
-  if (extra) Object.assign(ev, extra);
-  return ev;
+function makeTimelineEvent(stepIndex, t, macro, kind, title, subtitle) {
+  return { stepIndex, t, macro, kind, title, subtitle };
 }
 
 function buildRawTopicTimeline(plan, topicId, stepTopicMap) {
@@ -995,8 +797,7 @@ function buildRawTopicTimeline(plan, topicId, stepTopicMap) {
     if (step.type === 'TransitionStep') {
       const toAgent = d.to_agent ? String(d.to_agent).trim() : '';
       events.push(makeTimelineEvent(i, t, toAgent ? handoffMacroId(toAgent) : null, 'transition',
-        toAgent ? `Handoff \u2192 ${toAgent}` : 'Handoff (leaving topic)', withStepDuration('', step),
-        { badgeLabel: toAgent || 'Handoff' }));
+        toAgent ? `Handoff \u2192 ${toAgent}` : 'Handoff (leaving sub agent)', withStepDuration('', step)));
       continue;
     }
     if (step.type === 'UserInputStep') {
@@ -1018,17 +819,13 @@ function buildRawTopicTimeline(plan, topicId, stepTopicMap) {
     if (step.type === 'LLMStep') {
       const lat = d.execution_latency != null ? `${esc(String(d.execution_latency))} ms` : '';
       const subParts = [d.agent_name && esc(String(d.agent_name)), d.prompt_name && esc(String(d.prompt_name)), lat].filter(Boolean);
-      events.push(makeTimelineEvent(i, t, 'LLM', 'llm_sent', 'LLM call', withStepDuration(subParts.join(' \u00b7 '), step),
-        { badgeLabel: 'LLM', badgeIsMacro: true }));
+      events.push(makeTimelineEvent(i, t, 'LLM', 'llm_sent', 'LLM call', withStepDuration(subParts.join(' \u00b7 '), step)));
     }
     if (step.type === 'FunctionStep') {
       const fn = step.function || {};
-      const fnName = fn.name != null ? String(fn.name) : '';
       const macroId = functionStepMacroId(step);
-      const badgeLabel = fnName ? (fnName.length > 28 ? fnName.slice(0, 27) + '\u2026' : fnName) : 'Function';
       const latSub = step.executionLatency != null ? `${esc(String(step.executionLatency))} ms` : '';
-      events.push(makeTimelineEvent(i, t, macroId, 'execute', 'Tool executed', withStepDuration(latSub, step),
-        { badgeLabel, badgeTitle: fnName || undefined, badgeIsMacro: !fnName }));
+      events.push(makeTimelineEvent(i, t, macroId, 'execute', 'Tool executed', withStepDuration(latSub, step)));
     }
     if (step.type === 'PlannerResponseStep' || step.type === 'ReasoningStep') {
       events.push(makeTimelineEvent(i, t, 'Response', 'response',
@@ -1038,17 +835,6 @@ function buildRawTopicTimeline(plan, topicId, stepTopicMap) {
   return events;
 }
 
-function topicLlmLatencySumMs(plan, topicId, stepTopicMap) {
-  if (!plan || !topicId) return 0;
-  let sum = 0;
-  for (let i = 0; i < plan.length; i++) {
-    const topic = stepTopicMap ? stepTopicMap[i] : 'none';
-    if (topic !== topicId || plan[i].type !== 'LLMStep') continue;
-    const lat = plan[i].data && plan[i].data.execution_latency;
-    if (typeof lat === 'number' && lat > 0) sum += lat;
-  }
-  return sum;
-}
 
 function parsePlan(plan) {
   const displayNames = Object.create(null);
@@ -1408,14 +1194,14 @@ function analyzeGraph(parsed) {
 
   let prose = [];
   if (wcc.length > 1) {
-    prose.push(`This trace spans <strong>${wcc.length}</strong> weakly connected topic islands — handoffs do not connect all topics in one component.`);
+    prose.push(`This trace spans <strong>${wcc.length}</strong> weakly connected sub agent islands — handoffs do not connect all sub agents in one component.`);
   } else if (n > 0) {
-    prose.push('All topics sit in one weakly connected component.');
+    prose.push('All sub agents sit in one weakly connected component.');
   }
   if (nontrivialScc.length > 0) {
-    prose.push(`Strongly connected components with 2+ topics: <strong>${nontrivialScc.length}</strong> — routing may form directed cycles (revisit topics).`);
+    prose.push(`Strongly connected components with 2+ sub agents: <strong>${nontrivialScc.length}</strong> — routing may form directed cycles (revisit sub agents).`);
   } else if (n > 0 && mUnique > 0) {
-    prose.push('Topic digraph is acyclic at the simple-edge level (DAG-like); flow is easier to follow.');
+    prose.push('Sub agent digraph is acyclic at the simple-edge level (DAG-like); flow is easier to follow.');
   }
   if (treeLower != null && mUnique > treeLower) {
     prose.push(`Unique transition arcs (<strong>${mUnique}</strong>) exceed the tree lower bound (<strong>${treeLower}</strong>) for a connected graph — extra paths or repeated topology.`);
@@ -1451,80 +1237,211 @@ function analyzeGraph(parsed) {
 function renderMetrics(parsed, a) {
   const plan = currentData && currentData.plan;
   const st = computePlanExecutionStats(plan || []);
-  let metricsOpen = false;
-  try {
-    metricsOpen = localStorage.getItem(LS_METRICS_OPEN) === '1';
-  } catch (_) {}
-
-  const rows = parsed.topics.map(t => {
-    const label = parsed.displayNames[t] || t;
-    return `<tr><td>${esc(label)}</td><td class="metric-val">${a.indeg[t]}</td><td class="metric-val">${a.outdeg[t]}</td></tr>`;
-  }).join('');
-  const btRows = a.between
-    ? parsed.topics
-        .map(t => ({ t, b: a.between[t] }))
-        .sort((x, y) => y.b - x.b)
-        .map(({ t, b }) => `<tr><td>${esc(parsed.displayNames[t] || t)}</td><td class="metric-val">${b.toFixed(3)}</td></tr>`)
-        .join('')
-    : '<tr><td colspan="2">(skipped for large graphs)</td></tr>';
-
-  const strip = `<span class="exec-stats-strip">
+  const el = document.getElementById('metricsCard');
+  el.classList.remove('hidden');
+  el.innerHTML = `<span class="exec-stats-strip">
     <span><b>${st.steps}</b> steps</span>
     <span><b>${st.llm}</b> LLM</span>
     <span><b>${st.fn}</b> functions</span>
     <span><b>${st.transition}</b> transitions</span>
     <span>Wall <b>${st.wall}ms</b></span>
-  </span>`;
+    <span><b>${a.n}</b> sub agents</span>
+    <span>Density <b>${a.density.toFixed(3)}</b></span>
+  </span><button class="btn" id="btnGraphAnalysis" style="margin-left:auto;font-size:11px;padding:4px 10px">Graph Analysis ↗</button>`;
+  document.getElementById('btnGraphAnalysis').addEventListener('click', () => openGraphAnalysisPdf(parsed, a, st));
+}
 
-  document.getElementById('metricsCard').innerHTML = `
-    <details class="metrics-details" id="metricsDetails"${metricsOpen ? ' open' : ''}>
-      <summary class="metrics-summary">
-        ${strip}
-        <span class="metrics-summary-label">Graph analysis</span>
-      </summary>
-      <div class="metrics-details-inner">
-        <h3>Graph analysis</h3>
-        <div class="metrics-grid">
-          <div><span style="color:var(--text-dim)">|V|</span> <span class="metric-val">${a.n}</span></div>
-          <div><span style="color:var(--text-dim)">|E| multigraph</span> <span class="metric-val">${a.mMulti}</span></div>
-          <div><span style="color:var(--text-dim)">|E| simple</span> <span class="metric-val">${a.mUnique}</span></div>
-          <div><span style="color:var(--text-dim)">Density (simple)</span> <span class="metric-val">${a.density.toFixed(4)}</span></div>
-          <div><span style="color:var(--text-dim)">WCC</span> <span class="metric-val">${a.wcc.length}</span></div>
-          <div><span style="color:var(--text-dim)">SCC count</span> <span class="metric-val">${a.scc.count}</span></div>
-          <div><span style="color:var(--text-dim)">Undirected diameter</span> <span class="metric-val">${a.diam}</span></div>
-        </div>
-        <table class="deg-table">
-          <thead><tr><th>Topic</th><th>indeg</th><th>outdeg</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-        <h3 style="margin-top:12px">Betweenness (undirected, unweighted)</h3>
-        <table class="deg-table"><thead><tr><th>Topic</th><th>Centrality</th></tr></thead><tbody>${btRows}</tbody></table>
-        <div class="metrics-prose">${a.prose.map(p => `<p>${p}</p>`).join('')}</div>
-      </div>
-    </details>
-  `;
-  const det = document.getElementById('metricsDetails');
-  if (det) {
-    det.addEventListener('toggle', () => {
-      try {
-        localStorage.setItem(LS_METRICS_OPEN, det.open ? '1' : '0');
-      } catch (_) {}
-    });
+function openGraphAnalysisPdf(parsed, a, st) {
+  const dn = id => esc(parsed.displayNames[id] || id);
+
+  const degRows = parsed.topics.map(t =>
+    `<tr><td>${dn(t)}</td><td style="text-align:right">${a.indeg[t]}</td><td style="text-align:right">${a.outdeg[t]}</td><td style="text-align:right">${a.indeg[t] + a.outdeg[t]}</td></tr>`
+  ).join('');
+
+  const btRows = a.between
+    ? parsed.topics
+        .map(t => ({ t, b: a.between[t] }))
+        .sort((x, y) => y.b - x.b)
+        .map(({ t, b }) => `<tr><td>${dn(t)}</td><td style="text-align:right">${b.toFixed(4)}</td></tr>`)
+        .join('')
+    : '<tr><td colspan="2">Skipped — graph exceeds 40 nodes</td></tr>';
+
+  const sccGroups = a.scc.groups
+    .filter(g => g.length > 1)
+    .map((g, i) => `<tr><td>SCC ${i + 1}</td><td>${g.map(id => dn(id)).join(', ')}</td><td style="text-align:right">${g.length}</td></tr>`)
+    .join('') || '<tr><td colspan="3">None — the graph is acyclic (DAG)</td></tr>';
+
+  const wccGroups = a.wcc.map((g, i) =>
+    `<tr><td>Component ${i + 1}</td><td>${g.map(id => dn(id)).join(', ')}</td><td style="text-align:right">${g.length}</td></tr>`
+  ).join('');
+
+  const selfLoopRows = a.selfLoops.length
+    ? a.selfLoops.map(e => `<tr><td>${dn(e.from)}</td><td style="text-align:right">${e.count}</td></tr>`).join('')
+    : '<tr><td colspan="2">None</td></tr>';
+
+  const edgeRows = [...parsed.transitionEdges]
+    .sort((x, y) => y.count - x.count)
+    .map(e => `<tr><td>${dn(e.from)}</td><td>${dn(e.to)}</td><td style="text-align:right">${e.count}</td></tr>`)
+    .join('');
+
+  const proseHtml = a.prose.map(p => `<p>${p}</p>`).join('');
+
+  const html = `<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>Graph Analysis — AgentLens</title>
+<style>
+@media print { @page { margin: 1.5cm 2cm; size: A4; } }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 860px; margin: 0 auto; padding: 40px 32px; color: #1e2030; line-height: 1.6; }
+h1 { font-size: 22px; margin-bottom: 4px; }
+h2 { font-size: 16px; margin-top: 32px; margin-bottom: 8px; border-bottom: 2px solid #e2e4ed; padding-bottom: 6px; color: #2563eb; }
+h3 { font-size: 13px; margin-top: 20px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7084; }
+p { margin: 6px 0; }
+.subtitle { font-size: 13px; color: #6b7084; margin-bottom: 24px; }
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin: 12px 0 20px; }
+.metric-box { background: #f5f6fa; border: 1px solid #d4d7e3; border-radius: 8px; padding: 12px 14px; }
+.metric-box .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7084; margin-bottom: 4px; }
+.metric-box .value { font-size: 20px; font-weight: 700; color: #2563eb; font-family: 'SF Mono', Consolas, monospace; }
+table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 13px; }
+th { text-align: left; padding: 8px 10px; border-bottom: 2px solid #d4d7e3; color: #6b7084; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+td { padding: 6px 10px; border-bottom: 1px solid #e2e4ed; }
+tr:hover td { background: rgba(37, 99, 235, 0.04); }
+.algo-section { background: #f8f9fc; border: 1px solid #e2e4ed; border-radius: 8px; padding: 16px 18px; margin: 12px 0; }
+.algo-section h4 { font-size: 13px; font-weight: 700; margin: 0 0 6px; color: #1e2030; }
+.algo-section p { font-size: 12px; color: #3a3f54; margin: 4px 0; }
+.algo-section code { font-family: 'SF Mono', Consolas, monospace; font-size: 11px; background: #e8eaf0; padding: 1px 5px; border-radius: 3px; }
+.interpretation { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 18px; margin: 16px 0; }
+.interpretation p { font-size: 13px; color: #1e40af; margin: 4px 0; }
+.print-note { font-size: 11px; color: #6b7084; margin-top: 32px; border-top: 1px solid #e2e4ed; padding-top: 12px; }
+</style>
+</head><body>
+<h1>Agent Graph Analysis</h1>
+<p class="subtitle">Generated by AgentLens · ${new Date().toLocaleString()}</p>
+
+<h2>1. Execution Summary</h2>
+<div class="metrics-grid">
+  <div class="metric-box"><div class="label">Total Steps</div><div class="value">${st.steps}</div></div>
+  <div class="metric-box"><div class="label">LLM Calls</div><div class="value">${st.llm}</div></div>
+  <div class="metric-box"><div class="label">Function Calls</div><div class="value">${st.fn}</div></div>
+  <div class="metric-box"><div class="label">Transitions</div><div class="value">${st.transition}</div></div>
+  <div class="metric-box"><div class="label">Wall Time</div><div class="value">${st.wall}ms</div></div>
+  <div class="metric-box"><div class="label">Sub Agents</div><div class="value">${a.n}</div></div>
+</div>
+
+<h2>2. Graph Structure</h2>
+<div class="metrics-grid">
+  <div class="metric-box"><div class="label">Vertices |V|</div><div class="value">${a.n}</div></div>
+  <div class="metric-box"><div class="label">Edges (multigraph)</div><div class="value">${a.mMulti}</div></div>
+  <div class="metric-box"><div class="label">Edges (simple)</div><div class="value">${a.mUnique}</div></div>
+  <div class="metric-box"><div class="label">Density</div><div class="value">${a.density.toFixed(4)}</div></div>
+  <div class="metric-box"><div class="label">Undirected Diameter</div><div class="value">${a.diam}</div></div>
+  <div class="metric-box"><div class="label">Weakly Connected Components</div><div class="value">${a.wcc.length}</div></div>
+  <div class="metric-box"><div class="label">Strongly Connected Components</div><div class="value">${a.scc.count}</div></div>
+  <div class="metric-box"><div class="label">Redundant Edges</div><div class="value">${a.redundancy}</div></div>
+</div>
+
+<div class="interpretation">${proseHtml}</div>
+
+<h2>3. Degree Analysis</h2>
+<p>In-degree is the number of distinct sub agents that hand off <em>to</em> a given agent. Out-degree is the number of distinct agents it hands off <em>to</em>. High total degree indicates a hub agent.</p>
+<table>
+  <thead><tr><th>Sub Agent</th><th style="text-align:right">In-degree</th><th style="text-align:right">Out-degree</th><th style="text-align:right">Total</th></tr></thead>
+  <tbody>${degRows}</tbody>
+</table>
+<div class="algo-section">
+  <h4>How degrees are computed</h4>
+  <p>The agent graph is modeled as a directed multigraph <code>G = (V, E)</code> where each vertex is a sub agent and each edge is a <code>TransitionStep</code> handoff. For degree analysis, parallel edges are collapsed into a simple digraph (each pair counted once). In-degree <code>deg⁻(v) = |{u : (u,v) ∈ E}|</code> and out-degree <code>deg⁺(v) = |{w : (v,w) ∈ E}|</code>.</p>
+</div>
+
+<h2>4. Transition Edges</h2>
+<p>Every handoff between sub agents, sorted by frequency. Count &gt; 1 means the same pair was traversed multiple times during the trace.</p>
+<table>
+  <thead><tr><th>From</th><th>To</th><th style="text-align:right">Count</th></tr></thead>
+  <tbody>${edgeRows}</tbody>
+</table>
+
+<h2>5. Self-Loops</h2>
+<p>A self-loop means a sub agent handed off to itself. This can indicate retry logic or iterative processing within a single agent.</p>
+<table>
+  <thead><tr><th>Sub Agent</th><th style="text-align:right">Count</th></tr></thead>
+  <tbody>${selfLoopRows}</tbody>
+</table>
+
+<h2>6. Weakly Connected Components</h2>
+<p>Weakly connected components (WCC) treat all edges as undirected. If WCC &gt; 1, some sub agents are completely disconnected — they were never linked by any handoff chain.</p>
+<table>
+  <thead><tr><th>Component</th><th>Members</th><th style="text-align:right">Size</th></tr></thead>
+  <tbody>${wccGroups}</tbody>
+</table>
+<div class="algo-section">
+  <h4>Algorithm: BFS / Union-Find</h4>
+  <p>Build an undirected adjacency list from all directed edges. Run BFS from each unvisited vertex, assigning all reachable vertices to the same component. Time complexity: <code>O(|V| + |E|)</code>.</p>
+</div>
+
+<h2>7. Strongly Connected Components</h2>
+<p>An SCC is a maximal set of vertices where every vertex is reachable from every other via directed edges. Non-trivial SCCs (size ≥ 2) indicate directed cycles — the agent can revisit sub agents in a loop.</p>
+<table>
+  <thead><tr><th>SCC</th><th>Members</th><th style="text-align:right">Size</th></tr></thead>
+  <tbody>${sccGroups}</tbody>
+</table>
+<div class="algo-section">
+  <h4>Algorithm: Kosaraju's Two-Pass</h4>
+  <p><strong>Pass 1:</strong> Run DFS on the original graph <code>G</code>, pushing vertices onto a stack in post-order (finish time).</p>
+  <p><strong>Pass 2:</strong> Pop vertices from the stack. For each unvisited vertex, run DFS on the <em>transpose graph</em> <code>Gᵀ</code> (all edges reversed). Each DFS tree in pass 2 is one SCC.</p>
+  <p><strong>Why it works:</strong> The post-order from pass 1 ensures that in pass 2, DFS from a vertex in a "sink" SCC of the DAG of SCCs cannot escape into other components. The transpose reverses reachability, so only vertices mutually reachable (i.e., in the same SCC) are visited together.</p>
+  <p>Time complexity: <code>O(|V| + |E|)</code>. Space: <code>O(|V|)</code> for the stack and component labels.</p>
+</div>
+
+<h2>8. Betweenness Centrality</h2>
+<p>Betweenness centrality measures how often a sub agent lies on the shortest path between all other pairs. A high score indicates a potential orchestration bottleneck — if that agent fails or slows down, many handoff paths are affected.</p>
+${a.maxBt ? `<p><strong>Highest betweenness:</strong> ${dn(a.maxBt)} (${a.maxBtVal.toFixed(4)})</p>` : ''}
+<table>
+  <thead><tr><th>Sub Agent</th><th style="text-align:right">Betweenness</th></tr></thead>
+  <tbody>${btRows}</tbody>
+</table>
+<div class="algo-section">
+  <h4>Algorithm: Brandes' Algorithm (undirected)</h4>
+  <p>For each source vertex <code>s</code>:</p>
+  <p>1. Run BFS from <code>s</code> to compute shortest-path distances <code>d(s,v)</code> and path counts <code>σ(s,v)</code>.</p>
+  <p>2. Process vertices in reverse BFS order (farthest first). For each vertex <code>w</code>, accumulate pair-dependencies: <code>δ(s,v) += (σ(s,v)/σ(s,w)) · (1 + δ(s,w))</code> for each predecessor <code>v</code> of <code>w</code>.</p>
+  <p>3. Add <code>δ(s,v)</code> to the centrality score <code>C(v)</code> for all <code>v ≠ s</code>.</p>
+  <p>After all sources, divide by 2 (undirected correction). The formula counts each shortest path pair <code>(s,t)</code> once.</p>
+  <p>Time complexity: <code>O(|V| · |E|)</code>. This is efficient for small to medium graphs (≤ 40 vertices).</p>
+  <p><strong>Interpretation:</strong> <code>C(v) = Σ_{s≠v≠t} σ(s,t|v) / σ(s,t)</code> where <code>σ(s,t)</code> is the total number of shortest <code>s–t</code> paths and <code>σ(s,t|v)</code> is the number passing through <code>v</code>.</p>
+</div>
+
+<h2>9. Graph Density</h2>
+<div class="algo-section">
+  <h4>Definition</h4>
+  <p>For a simple directed graph: <code>density = |E| / (|V| × (|V| - 1))</code>.</p>
+  <p>A density of 0 means no edges; 1.0 means every possible directed edge exists (complete graph). Values near 0 suggest a sparse, tree-like handoff structure. Values above 0.5 indicate most sub agents can hand off to most others.</p>
+  <p><strong>This trace:</strong> density = <code>${a.density.toFixed(4)}</code> with <code>${a.mUnique}</code> unique edges out of <code>${a.n > 1 ? a.n * (a.n - 1) : 0}</code> possible.</p>
+</div>
+
+<h2>10. Undirected Diameter</h2>
+<div class="algo-section">
+  <h4>Definition</h4>
+  <p>The diameter is the longest shortest path between any pair of vertices in the undirected version of the graph. It measures the worst-case number of hops needed to get from one sub agent to any other.</p>
+  <p>Computed by running BFS from every vertex and tracking the maximum distance. Time complexity: <code>O(|V| × (|V| + |E|))</code>.</p>
+  <p><strong>This trace:</strong> diameter = <code>${a.diam}</code>${a.diam === 0 ? ' (single agent or fully disconnected)' : a.diam === 1 ? ' (all agents directly connected — star or complete topology)' : ` (up to ${a.diam} hops between the most distant pair)`}.</p>
+</div>
+
+<p class="print-note">Use your browser's Print → Save as PDF to export this report. All analysis is performed locally in the browser with zero external dependencies.</p>
+</body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const w = window.open(url, '_blank');
+  if (w) {
+    const revoke = () => URL.revokeObjectURL(url);
+    w.addEventListener('afterprint', revoke, { once: true });
+    w.addEventListener('pagehide', revoke, { once: true });
+  } else {
+    URL.revokeObjectURL(url);
+    showError('Pop-up blocked — please allow pop-ups for this page.');
   }
 }
 
-function updateFsmTimelineMeta() {
-  const el = document.getElementById('fsmTimelineMeta');
-  if (!el) return;
-  const raw = fsmPlayback.rawEvents && fsmPlayback.rawEvents.length;
-  const fil = fsmPlayback.events && fsmPlayback.events.length;
-  let extra = '';
-  if (selectedTopicId && currentData && currentData.plan) {
-    const s = topicLlmLatencySumMs(currentData.plan, selectedTopicId, vizParsed && vizParsed.stepTopicMap);
-    if (s > 0) extra = ` · Σ LLM ${s}ms`;
-  }
-  el.textContent = `· showing ${fil} / raw ${raw}${extra}`;
-}
 
 function refreshFsmTimelineAfterFilterChange() {
   if (!selectedTopicId || !vizParsed || !currentData) return;
@@ -1536,40 +1453,19 @@ function refreshFsmTimelineAfterFilterChange() {
   }
   fsmPlayback.events = applyTimelineFilters(plan, fsmPlayback.rawEvents, timelineFilterPrefs);
   const n = fsmPlayback.events.length;
-  const scrub = document.getElementById('fsmScrub');
-  const feed = document.getElementById('fsmEventFeed');
   if (n === 0) {
     fsmPlayback.idx = -1;
-    fsmPlayback.lastFeedIdx = -1;
-    if (feed)
-      feed.innerHTML =
-        '<div style="padding:18px;font-size:12px;color:var(--text-dim);line-height:1.5">No events match the current filters for this topic.</div>';
-    if (scrub) {
-      scrub.max = 0;
-      scrub.value = '0';
-    }
     document.getElementById('fsmStepLabel').textContent = '0 / 0';
     setFsmHighlight(null, null);
     const ds = document.getElementById('fsmDetailSlot');
-    if (ds) ds.innerHTML = '';
+    if (ds) ds.innerHTML = '<div style="padding:18px;font-size:13px;color:var(--text-dim)">No events match the current filters.</div>';
     syncFsmPlaybar();
-    updateFsmTimelineMeta();
     return;
   }
   let idx = Math.min(Math.max(0, fsmPlayback.idx), n - 1);
-  fsmPlayback.lastFeedIdx = -1;
-  if (scrub) {
-    scrub.max = Math.max(0, n - 1);
-    scrub.value = String(idx);
-  }
-  setFsmPlaybackIndex(idx, false);
-  updateFsmTimelineMeta();
+  setFsmPlaybackIndex(idx);
 }
 
-function topicNodeLabel(id, displayNames) {
-  const pretty = displayNames[id] || id.replace(/_/g, ' ');
-  return `${pretty} · ${id}`;
-}
 
 function svgEl(name, attrs, parent) {
   const n = document.createElementNS('http://www.w3.org/2000/svg', name);
@@ -1622,14 +1518,16 @@ function clearFsmPanel() {
   detachFsmKeyboardNav();
   fsmPlayback.events = [];
   fsmPlayback.rawEvents = [];
-  fsmPlayback.lastFeedIdx = -1;
   fsmPlayback.nodeMap = null;
   fsmPlayback.edgePathMap = null;
   fsmPlayback.idx = -1;
-  document.getElementById('fsmTopicLabel').textContent = 'select a topic';
-  document.getElementById('fsmWrap').innerHTML =
-    '<div style="padding:20px;color:var(--text-dim);font-size:13px">Click a topic circle in the graph on the left.</div>';
-  document.getElementById('topicTraceSlot').innerHTML = '';
+  document.getElementById('fsmTopicLabel').textContent = 'select a sub agent →';
+  document.getElementById('fsmTopicLabel').style.opacity = '.5';
+  document.getElementById('fsmDiagramLabel').textContent = 'select a sub agent';
+  document.getElementById('fsmWrap').innerHTML = '';
+  document.getElementById('inspectorPlaybar').style.display = 'none';
+  document.getElementById('fsmDetailSlot').innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-dim);font-size:13px">Select a sub agent from the list on the right to begin.</div>';
 }
 
 function renderTopicGraph(parsed) {
@@ -1735,17 +1633,36 @@ function renderTopicGraph(parsed) {
 
   svg.addEventListener('click', ev => {
     if (!vizParsed) return;
+    if (el._zoomPanState && el._zoomPanState.didDrag) return;
     const hit = ev.target.closest('.topic-node');
     if (hit && hit.dataset.topicId) {
-      selectedTopicId = hit.dataset.topicId;
-      updateTopicSelection(svg);
-      renderFsm(selectedTopicId, vizParsed);
-    } else if (ev.target === svg || ev.target.closest('.edges')) {
-      selectedTopicId = null;
-      updateTopicSelection(svg);
-      clearFsmPanel();
+      selectTopic(hit.dataset.topicId);
     }
   });
+
+  setupSvgZoomPan(el);
+  renderTopicPills(parsed);
+}
+
+function selectTopic(topicId) {
+  selectedTopicId = topicId;
+  const svg = document.getElementById('topicGraph').querySelector('svg');
+  if (svg) updateTopicSelection(svg);
+  document.querySelectorAll('.topic-pill').forEach(p => p.classList.toggle('active', p.dataset.topicId === topicId));
+  renderFsm(topicId, vizParsed);
+}
+
+function renderTopicPills(parsed) {
+  const list = document.getElementById('topicList');
+  list.innerHTML = '';
+  for (const id of parsed.topics) {
+    const pill = document.createElement('button');
+    pill.className = 'topic-pill';
+    pill.dataset.topicId = id;
+    pill.textContent = parsed.displayNames[id] || id.replace(/_/g, ' ');
+    pill.addEventListener('click', () => selectTopic(id));
+    list.appendChild(pill);
+  }
 }
 
 function updateTopicSelection(svg) {
@@ -1763,12 +1680,12 @@ function syncFsmPlaybar() {
 }
 
 function stepFsmPrev() {
-  if (fsmPlayback.idx > 0) setFsmPlaybackIndex(fsmPlayback.idx - 1, false);
+  if (fsmPlayback.idx > 0) setFsmPlaybackIndex(fsmPlayback.idx - 1);
 }
 
 function stepFsmNext() {
   const n = fsmPlayback.events.length;
-  if (fsmPlayback.idx < n - 1) setFsmPlaybackIndex(fsmPlayback.idx + 1, true);
+  if (fsmPlayback.idx < n - 1) setFsmPlaybackIndex(fsmPlayback.idx + 1);
 }
 
 function setFsmHighlight(macro, prevMacro) {
@@ -1828,54 +1745,7 @@ function svgTextLines(text, maxChars, sep) {
   return [text.length > maxW ? text.slice(0, maxW - 1) + '…' : text];
 }
 
-function makeEventCardEl(ev, anim, isPast, isCurrent) {
-  const kindClass =
-    {
-      variable: 'var',
-      llm_sent: 'tool',
-      enabled: 'tool',
-      action: 'action',
-      execute: 'exec',
-      entry: 'entry',
-      user: 'user',
-      response: 'response',
-      transition: 'transition',
-    }[ev.kind] || '';
-  const badgeRaw = ev.badgeLabel != null ? ev.badgeLabel : ev.macro || '—';
-  const macroCls = ev.badgeIsMacro === false ? '' : ' fsm-ev-badge-macro';
-  const tipAttr = ev.badgeTitle != null ? ` title="${esc(ev.badgeTitle)}"` : '';
-  const div = document.createElement('div');
-  div.className = 'fsm-event-card ' + kindClass + (isPast ? ' fsm-past' : '') + (isCurrent ? ' fsm-current' : '') + (anim ? ' fsm-anim' : '');
-  const currentLabel = isCurrent ? '<span class="fsm-current-label">CURRENT</span>' : '';
-  div.innerHTML = `
-    <div class="fsm-ev-title">
-      <span>${esc(ev.title)}</span>
-      <span class="fsm-ev-badge${macroCls}"${tipAttr}>${esc(badgeRaw)}</span>
-      <span class="fsm-ev-step">plan[${ev.stepIndex}]</span>
-      ${currentLabel}
-    </div>
-    ${ev.subtitle ? `<div class="fsm-ev-sub">${ev.subtitle}</div>` : ''}
-    <div class="fsm-ev-body">${ensureEventBody(ev)}</div>
-  `;
-  return div;
-}
-
-function rebuildFsmFeedFromZero(feed, idx, animateLatest) {
-  feed.innerHTML = '';
-  for (let k = 0; k <= idx; k++) {
-    if (k === idx && idx > 0) {
-      const divider = document.createElement('div');
-      divider.className = 'fsm-history-divider';
-      divider.textContent = 'history';
-      feed.appendChild(divider);
-    }
-    feed.appendChild(makeEventCardEl(fsmPlayback.events[k], animateLatest && k === idx, k < idx, k === idx));
-  }
-  fsmPlayback.lastFeedIdx = idx;
-  feed.scrollTop = feed.scrollHeight;
-}
-
-function setFsmPlaybackIndex(i, animateLatest) {
+function setFsmPlaybackIndex(i) {
   const n = fsmPlayback.events.length;
   if (n === 0) return;
   const idx = Math.max(0, Math.min(n - 1, i));
@@ -1884,59 +1754,6 @@ function setFsmPlaybackIndex(i, animateLatest) {
   const prevMacro = idx > 0 ? fsmPlayback.events[idx - 1].macro : null;
   setFsmHighlight(ev.macro, prevMacro);
 
-  const feed = document.getElementById('fsmEventFeed');
-  if (feed) {
-    const lastR = fsmPlayback.lastFeedIdx;
-    if (lastR < 0 || idx < lastR - 1 || idx > lastR + 1) {
-      rebuildFsmFeedFromZero(feed, idx, animateLatest);
-    } else if (idx === lastR + 1) {
-      const prevCurrent = feed.querySelector('.fsm-current');
-      if (prevCurrent) {
-        prevCurrent.classList.remove('fsm-current');
-        prevCurrent.classList.add('fsm-past');
-        const lbl = prevCurrent.querySelector('.fsm-current-label');
-        if (lbl) lbl.remove();
-      }
-      const oldDivider = feed.querySelector('.fsm-history-divider');
-      if (oldDivider) oldDivider.remove();
-      const divider = document.createElement('div');
-      divider.className = 'fsm-history-divider';
-      divider.textContent = 'history';
-      feed.appendChild(divider);
-      feed.appendChild(makeEventCardEl(fsmPlayback.events[idx], animateLatest, false, true));
-      fsmPlayback.lastFeedIdx = idx;
-      feed.scrollTop = feed.scrollHeight;
-    } else if (idx === lastR - 1) {
-      const oldDivider = feed.querySelector('.fsm-history-divider');
-      if (oldDivider) oldDivider.remove();
-      if (feed.lastElementChild) feed.removeChild(feed.lastElementChild);
-      const newCurrent = feed.lastElementChild;
-      if (newCurrent && newCurrent.classList.contains('fsm-event-card')) {
-        newCurrent.classList.remove('fsm-past');
-        newCurrent.classList.add('fsm-current');
-        const titleRow = newCurrent.querySelector('.fsm-ev-title');
-        if (titleRow && !newCurrent.querySelector('.fsm-current-label')) {
-          const lbl = document.createElement('span');
-          lbl.className = 'fsm-current-label';
-          lbl.textContent = 'CURRENT';
-          titleRow.appendChild(lbl);
-        }
-      }
-      if (idx > 0) {
-        const divider = document.createElement('div');
-        divider.className = 'fsm-history-divider';
-        divider.textContent = 'history';
-        feed.insertBefore(divider, newCurrent);
-      }
-      fsmPlayback.lastFeedIdx = idx;
-      feed.scrollTop = feed.scrollHeight;
-    } else {
-      rebuildFsmFeedFromZero(feed, idx, animateLatest);
-    }
-  }
-
-  const scrub = document.getElementById('fsmScrub');
-  if (scrub) scrub.value = String(idx);
   const lbl = document.getElementById('fsmStepLabel');
   if (lbl) lbl.textContent = `${idx + 1} / ${n}`;
 
@@ -1948,6 +1765,7 @@ function setFsmPlaybackIndex(i, animateLatest) {
     } else {
       detailSlot.innerHTML = '';
     }
+    detailSlot.scrollTop = 0;
   }
 
   syncFsmPlaybar();
@@ -2015,6 +1833,7 @@ function setupSvgZoomPan(container) {
   svg.addEventListener('pointerdown', function(e) {
     if (e.button !== 0) return;
     state.dragging = true;
+    state.didDrag = false;
     state.startX = e.clientX;
     state.startY = e.clientY;
     state.startVBX = state.x;
@@ -2028,6 +1847,7 @@ function setupSvgZoomPan(container) {
     const rect = svg.getBoundingClientRect();
     const dx = (e.clientX - state.startX) / rect.width * state.w;
     const dy = (e.clientY - state.startY) / rect.height * state.h;
+    if (Math.abs(e.clientX - state.startX) > 3 || Math.abs(e.clientY - state.startY) > 3) state.didDrag = true;
     state.x = state.startVBX - dx;
     state.y = state.startVBY - dy;
     applyVB();
@@ -2037,6 +1857,8 @@ function setupSvgZoomPan(container) {
     state.dragging = false;
     svg.classList.remove('panning');
   });
+
+  container._zoomPanState = state;
 
   btnIn.addEventListener('click', function() {
     zoom(0.75, state.x + state.w / 2, state.y + state.h / 2);
@@ -2262,14 +2084,14 @@ function renderFsmMacroSvg(container, trans) {
     }, g);
 
     if (isProc) {
-      svgEl('text', { x: String(p.x), y: String(p.y - 4), class: 'fsm-node-label', style: 'font-size:13px' }, g).textContent = 'Topic Setup';
+      svgEl('text', { x: String(p.x), y: String(p.y - 4), class: 'fsm-node-label', style: 'font-size:13px' }, g).textContent = 'Sub Agent Setup';
       svgEl('text', { x: String(p.x), y: String(p.y + 12), class: 'fsm-node-sublabel', style: 'font-size:10px' }, g).textContent = 'variables \u00b7 prompt buffer';
     } else if (isHandoff) {
       const topicName = handoffTargetName(id);
       const lines = svgTextLines(topicName, 24, '_');
       const lh = 15, totalH = (lines.length + 1) * lh;
       const sy = p.y - totalH / 2 + lh * 0.7;
-      svgEl('text', { x: String(p.x), y: String(sy), class: 'fsm-node-sublabel', style: 'font-size:10px;font-weight:700;letter-spacing:.5px' }, g).textContent = 'TOPIC HANDOFF';
+      svgEl('text', { x: String(p.x), y: String(sy), class: 'fsm-node-sublabel', style: 'font-size:10px;font-weight:700;letter-spacing:.5px' }, g).textContent = 'SUB AGENT HANDOFF';
       const tEl = svgEl('text', { x: String(p.x), y: String(sy + lh), class: 'fsm-node-label', style: 'font-size:13px' }, g);
       lines.forEach((line, li) => {
         const sp = svgEl('tspan', { x: String(p.x), dy: li ? String(lh) : '0' }, tEl);
@@ -2286,7 +2108,7 @@ function renderFsmMacroSvg(container, trans) {
       });
     }
 
-    svgEl('title', {}, g).textContent = isHandoff ? `Topic handoff \u2192 ${handoffTargetName(id)}` : isTool ? `${id} (tool execution)` : isProc ? 'Topic Setup: variable updates, prompt buffer, tool enabling' : `${id} (state)`;
+    svgEl('title', {}, g).textContent = isHandoff ? `Sub agent handoff \u2192 ${handoffTargetName(id)}` : isTool ? `${id} (tool execution)` : isProc ? 'Sub Agent Setup: variable updates, prompt buffer, tool enabling' : `${id} (state)`;
     nodeMap[id] = g;
   }
 
@@ -2296,7 +2118,6 @@ function renderFsmMacroSvg(container, trans) {
 function renderFsm(topicId, parsed) {
   readFilterUiToPrefs();
   const plan = (currentData && currentData.plan) || [];
-  fsmPlayback.lastFeedIdx = -1;
   fsmPlayback.rawEvents = buildRawTopicTimeline(plan, topicId, vizParsed && vizParsed.stepTopicMap);
   fsmPlayback.events = applyTimelineFilters(plan, fsmPlayback.rawEvents, timelineFilterPrefs);
   fsmPlayback.idx = -1;
@@ -2304,24 +2125,13 @@ function renderFsm(topicId, parsed) {
   fsmPlayback.edgePathMap = null;
 
   const fsmTitle = parsed.displayNames[topicId] || topicId.replace(/_/g, ' ');
-  document.getElementById('fsmTopicLabel').textContent = `${fsmTitle} (${topicId})`;
+  document.getElementById('fsmTopicLabel').textContent = fsmTitle;
+  document.getElementById('fsmTopicLabel').style.opacity = '1';
+  document.getElementById('fsmDiagramLabel').textContent = fsmTitle;
+
   const trans = parsed.fsmEdges[topicId];
   const el = document.getElementById('fsmWrap');
   el.innerHTML = '';
-
-  const panel = document.createElement('div');
-  panel.className = 'fsm-panel';
-
-  const playbar = document.createElement('div');
-  playbar.className = 'fsm-playbar';
-  playbar.innerHTML = `
-    <div class="fsm-playbar-title">Step through trace</div>
-    <button type="button" class="btn-fsm" id="fsmBtnPrev" title="Previous event">← Prev</button>
-    <button type="button" class="btn-fsm" id="fsmBtnNext" title="Next event">Next →</button>
-    <span id="fsmStepLabel" style="font-size:12px;font-family:var(--font-mono);color:var(--text-dim);white-space:nowrap">—</span>
-    <input type="range" id="fsmScrub" min="0" max="0" value="0" />
-  `;
-  panel.appendChild(playbar);
 
   const macroSlot = document.createElement('div');
   macroSlot.className = 'fsm-macro-slot';
@@ -2333,55 +2143,32 @@ function renderFsm(topicId, parsed) {
     setupSvgZoomPan(macroSlot);
   } else {
     macroSlot.innerHTML =
-      '<div style="padding:22px;font-size:12px;color:var(--text-dim);text-align:center;line-height:1.55">No macro FSM edges for this topic.<br><span style="font-size:11px;opacity:.88">The timeline below still lists matching steps.</span></div>';
+      '<div style="padding:22px;font-size:12px;color:var(--text-dim);text-align:center;line-height:1.55">No Finite State Machine edges for this sub agent.</div>';
   }
 
-  panel.appendChild(macroSlot);
-  el.appendChild(panel);
+  el.appendChild(macroSlot);
 
-  const traceSlot = document.getElementById('topicTraceSlot');
-  traceSlot.innerHTML = '';
+  const playbar = document.getElementById('inspectorPlaybar');
+  playbar.style.display = '';
 
-  const detailSlot = document.createElement('div');
-  detailSlot.className = 'fsm-detail-slot';
-  detailSlot.id = 'fsmDetailSlot';
-  traceSlot.appendChild(detailSlot);
-
-  const timeline = document.createElement('div');
-  timeline.className = 'fsm-timeline';
-  timeline.innerHTML =
-    '<div class="fsm-timeline-h">Trace stream <span id="fsmTimelineMeta" style="font-weight:400;opacity:.88"></span></div><div class="fsm-event-feed" id="fsmEventFeed"></div>';
-  traceSlot.appendChild(timeline);
+  const detailSlot = document.getElementById('fsmDetailSlot');
+  detailSlot.innerHTML = '';
 
   const n = fsmPlayback.events.length;
-  const scrub = document.getElementById('fsmScrub');
-  scrub.max = Math.max(0, n - 1);
-
-  document.getElementById('fsmBtnPrev').addEventListener('click', stepFsmPrev);
-  document.getElementById('fsmBtnNext').addEventListener('click', stepFsmNext);
-  scrub.addEventListener('input', () => {
-    setFsmPlaybackIndex(parseInt(scrub.value, 10) || 0, false);
-  });
 
   if (n === 0) {
-    document.getElementById('fsmEventFeed').innerHTML =
+    detailSlot.innerHTML =
       fsmPlayback.rawEvents.length === 0
-        ? '<div style="padding:18px;font-size:12px;color:var(--text-dim);line-height:1.5">No plan steps are attributed to this topic (check topic handoffs and agent names).</div>'
-        : '<div style="padding:18px;font-size:12px;color:var(--text-dim);line-height:1.5">No events match the current filters for this topic.</div>';
+        ? '<div style="padding:18px;font-size:13px;color:var(--text-dim);line-height:1.5">No plan steps attributed to this sub agent.</div>'
+        : '<div style="padding:18px;font-size:13px;color:var(--text-dim);line-height:1.5">No events match the current filters.</div>';
     document.getElementById('fsmStepLabel').textContent = '0 / 0';
     setFsmHighlight(null, null);
-    const ds2 = document.getElementById('fsmDetailSlot');
-    if (ds2) ds2.innerHTML = '';
-    document.getElementById('fsmBtnPrev').disabled = true;
-    document.getElementById('fsmBtnNext').disabled = true;
     syncFsmPlaybar();
-    updateFsmTimelineMeta();
     attachFsmKeyboardNav();
     return;
   }
 
-  updateFsmTimelineMeta();
-  setFsmPlaybackIndex(0, false);
+  setFsmPlaybackIndex(0);
   attachFsmKeyboardNav();
 }
 
@@ -2419,7 +2206,7 @@ function loadData(json) {
   meta.innerHTML = [
     json.planId ? `<span class="meta-chip"><strong>Plan</strong> ${esc(String(json.planId).slice(0, 14))}…</span>` : '',
     json.sessionId ? `<span class="meta-chip"><strong>Session</strong> ${esc(String(json.sessionId).slice(0, 14))}…</span>` : '',
-    `<span class="meta-chip"><strong>Topics</strong> ${parsed.topics.length}</span>`,
+    `<span class="meta-chip"><strong>Sub Agents</strong> ${parsed.topics.length}</span>`,
   ].join('');
 
   renderMetrics(parsed, analysis);
@@ -2435,11 +2222,15 @@ function clearAll() {
   vizParsed = null;
   selectedTopicId = null;
   document.getElementById('topicGraph').innerHTML = '';
+  document.getElementById('topicList').innerHTML = '';
+  document.getElementById('fsmWrap').innerHTML = '';
   document.getElementById('mainViz').classList.add('hidden');
   document.getElementById('mainEmpty').classList.remove('hidden');
   document.body.classList.remove('app-viz');
   document.getElementById('btnClear').classList.add('hidden');
   document.getElementById('headerMeta').innerHTML = '';
+  document.getElementById('metricsCard').classList.add('hidden');
+  document.getElementById('metricsCard').innerHTML = '';
 }
 
 function openModal() {
@@ -2456,12 +2247,8 @@ document.getElementById('btnTheme').addEventListener('click', () => {
   }
 });
 
-document.getElementById('btnCollapseTopics').addEventListener('click', () => {
-  const layout = document.querySelector('.layout');
-  const collapsed = layout.classList.toggle('topic-collapsed');
-  const btn = document.getElementById('btnCollapseTopics');
-  btn.title = collapsed ? 'Expand topic graph' : 'Collapse topic graph';
-});
+document.getElementById('fsmBtnPrev').addEventListener('click', stepFsmPrev);
+document.getElementById('fsmBtnNext').addEventListener('click', stepFsmNext);
 
 document.getElementById('btnLoad').addEventListener('click', openModal);
 document.getElementById('btnPaste').addEventListener('click', openModal);
@@ -2506,7 +2293,7 @@ dz.addEventListener('drop', e => {
 
 loadTimelineFilterPrefs();
 syncFilterUiFromPrefs();
-['chkVarUpdates', 'chkReasoning', 'chkNodeEntry', 'chkEnabledTools', 'chkAgentScriptVars', 'chkFullLlm'].forEach(id => {
+['chkVarUpdates', 'chkReasoning', 'chkNodeEntry', 'chkEnabledTools', 'chkAgentScriptVars'].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('change', refreshFsmTimelineAfterFilterChange);
 });
