@@ -52,7 +52,7 @@ body.app-viz{height:100vh;overflow:hidden}
 .panel--inspector .fsm-playbar{flex-shrink:0}
 .panel--inspector .fsm-single-card{flex:1;overflow-y:auto;padding:14px 16px}
 .panel--context{display:flex;flex-direction:column;min-height:0;overflow:hidden}
-.panel--context .graph-wrap#fsmWrap{flex:1;min-height:0;overflow:hidden}
+.panel--context .graph-wrap#fsmWrap{flex:1 1 0;min-height:120px;overflow:hidden}
 .panel--context .topic-list{flex-shrink:0;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:4px;padding:6px 10px}
 .topic-pill{font-size:11px;padding:4px 10px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);
   color:var(--text-dim);cursor:pointer;font-weight:500;transition:border-color .15s,color .15s,background .15s;white-space:nowrap}
@@ -65,12 +65,12 @@ body.app-viz{height:100vh;overflow:hidden}
   color:var(--text-bright);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:space-between}
 .graph-wrap{flex:1;width:100%;min-height:200px;background:var(--surface2);position:relative;touch-action:none}
 .graph-wrap#topicGraph{
-  flex:0 0 auto;min-height:120px;max-height:min(22vh,200px);
+  flex:1 1 0;min-height:120px;
   overflow:hidden;position:relative;min-width:0}
 .graph-wrap#topicGraph svg{display:block;width:100%;height:100%;cursor:grab}
 .graph-wrap#topicGraph svg.panning{cursor:grabbing}
 .graph-wrap svg{display:block;width:100%;height:100%;cursor:default}
-.graph-wrap#fsmWrap{flex:1 1 auto;min-height:0;height:auto!important;max-height:none;display:flex;flex-direction:column;overflow:hidden}
+.graph-wrap#fsmWrap{flex:1 1 0;min-height:120px;height:auto!important;max-height:none;display:flex;flex-direction:column;overflow:hidden}
 .fsm-playbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
 .fsm-playbar select,.fsm-playbar .btn-fsm{font-size:12px;padding:6px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer}
 .fsm-playbar .btn-fsm{font-weight:600}
@@ -79,11 +79,23 @@ body.app-viz{height:100vh;overflow:hidden}
 .fsm-macro-slot svg{display:block;width:100%;height:100%;cursor:grab}
 .fsm-macro-slot svg.panning{cursor:grabbing}
 .fsm-zoom-controls{position:absolute;top:8px;right:8px;display:flex;gap:4px;z-index:10}
-.fsm-zoom-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+.fsm-zoom-btn,.graph-expand-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
   color:var(--text);width:28px;height:28px;font-size:14px;font-weight:700;cursor:pointer;display:flex;
-  align-items:center;justify-content:center;opacity:.85;transition:opacity .15s,border-color .15s}
-.fsm-zoom-btn:hover{opacity:1;border-color:var(--blue);color:var(--blue)}
+  align-items:center;justify-content:center;opacity:.85;transition:opacity .15s,border-color .15s;padding:0}
+.fsm-zoom-btn:hover,.graph-expand-btn:hover{opacity:1;border-color:var(--blue);color:var(--blue)}
+.graph-expand-btn{color:var(--text-dim);font-size:15px;font-weight:400}
 .fsm-zoom-level{font-size:10px;color:var(--text-dim);font-family:var(--font-mono);align-self:center;padding:0 4px;user-select:none}
+.graph-fullscreen-overlay{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;animation:fadeIn .15s ease}
+.graph-fullscreen-overlay .gf-header{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+  padding:12px 24px;border-bottom:1px solid var(--border);background:var(--surface)}
+.graph-fullscreen-overlay .gf-header h2{font-size:16px;font-weight:700;color:var(--text-bright);text-transform:uppercase;letter-spacing:.5px}
+.graph-fullscreen-overlay .gf-close{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text);padding:6px 14px;font-size:12px;cursor:pointer;font-weight:600}
+.graph-fullscreen-overlay .gf-close:hover{border-color:var(--blue);color:var(--blue)}
+.graph-fullscreen-overlay .gf-body{flex:1;min-height:0;background:var(--surface2);display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}
+.graph-fullscreen-overlay .gf-body svg{width:100%;height:100%;cursor:grab}
+.graph-fullscreen-overlay .gf-body svg.panning{cursor:grabbing}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .fsm-detail-slot{flex:1;min-height:0;overflow-y:auto;background:var(--surface);
   padding:14px 16px;font-size:clamp(11px,1.3vw,13px);line-height:1.5}
 .fsm-detail-slot:empty{display:none}
@@ -264,10 +276,10 @@ body.app-viz{height:100vh;overflow:hidden}
       <div class="fsm-single-card" id="fsmDetailSlot"></div>
     </div>
     <div class="panel panel--context" id="contextPanel">
-      <div class="panel-h">Agent Graph</div>
+      <div class="panel-h">Agent Graph <button type="button" class="graph-expand-btn" id="btnExpandGraph" title="Pop out graph (fullscreen)">&#x26F6;</button></div>
       <div class="graph-wrap" id="topicGraph"></div>
       <div class="topic-list" id="topicList"></div>
-      <div class="panel-h" style="font-size:11px">Finite State Machine — <span id="fsmDiagramLabel" style="font-weight:400;color:var(--text-dim)">select a sub agent</span></div>
+      <div class="panel-h" style="font-size:11px">Finite State Machine — <span id="fsmDiagramLabel" style="font-weight:400;color:var(--text-dim)">select a sub agent</span> <button type="button" class="graph-expand-btn" id="btnExpandFsm" title="Pop out FSM (fullscreen)" style="margin-left:auto">&#x26F6;</button></div>
       <div class="graph-wrap" id="fsmWrap"></div>
     </div>
   </div>
@@ -2297,6 +2309,74 @@ syncFilterUiFromPrefs();
   const el = document.getElementById(id);
   if (el) el.addEventListener('change', refreshFsmTimelineAfterFilterChange);
 });
+
+function openGraphFullscreen(svgSelector, title) {
+  const srcSvg = document.querySelector(svgSelector);
+  if (!srcSvg || !srcSvg.getAttribute('viewBox')) return;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'graph-fullscreen-overlay';
+  const header = document.createElement('div');
+  header.className = 'gf-header';
+  const h2 = document.createElement('h2');
+  h2.textContent = title;
+  header.appendChild(h2);
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'gf-close';
+  closeBtn.textContent = 'Close  Esc';
+  header.appendChild(closeBtn);
+  overlay.appendChild(header);
+  const body = document.createElement('div');
+  body.className = 'gf-body';
+  const clone = srcSvg.cloneNode(true);
+  clone.removeAttribute('style');
+  body.appendChild(clone);
+  overlay.appendChild(body);
+  document.body.appendChild(overlay);
+
+  const cleanup = () => { overlay.remove(); document.removeEventListener('keydown', onKey); };
+  closeBtn.addEventListener('click', cleanup);
+  const onKey = (e) => { if (e.key === 'Escape') cleanup(); };
+  document.addEventListener('keydown', onKey);
+
+  const parts = clone.getAttribute('viewBox').split(/\s+/).map(Number);
+  let [vx, vy, vw, vh] = parts;
+
+  clone.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = clone.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) / rect.width;
+    const my = (e.clientY - rect.top) / rect.height;
+    const factor = e.deltaY > 0 ? 1.12 : 1 / 1.12;
+    const nw = vw * factor, nh = vh * factor;
+    vx += (vw - nw) * mx;
+    vy += (vh - nh) * my;
+    vw = nw; vh = nh;
+    clone.setAttribute('viewBox', `${vx} ${vy} ${vw} ${vh}`);
+  }, { passive: false });
+
+  let dragging = false, sx, sy;
+  const endDrag = () => { dragging = false; clone.classList.remove('panning'); };
+  clone.addEventListener('pointerdown', (e) => {
+    dragging = true; sx = e.clientX; sy = e.clientY;
+    clone.classList.add('panning');
+    clone.setPointerCapture(e.pointerId);
+  });
+  clone.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const rect = clone.getBoundingClientRect();
+    const dx = (e.clientX - sx) * (vw / rect.width);
+    const dy = (e.clientY - sy) * (vh / rect.height);
+    vx -= dx; vy -= dy;
+    sx = e.clientX; sy = e.clientY;
+    clone.setAttribute('viewBox', `${vx} ${vy} ${vw} ${vh}`);
+  });
+  clone.addEventListener('pointerup', endDrag);
+  clone.addEventListener('pointercancel', endDrag);
+}
+
+document.getElementById('btnExpandGraph').addEventListener('click', () => openGraphFullscreen('#topicGraph svg', 'Agent Graph'));
+document.getElementById('btnExpandFsm').addEventListener('click', () => openGraphFullscreen('#fsmWrap svg', 'Finite State Machine'));
 </script>
 </body>
 </html>
