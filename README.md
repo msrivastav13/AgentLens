@@ -4,9 +4,13 @@ Understand what your Agentforce agent actually did — visually.
 
 **Try it now:** <https://msrivastav13.github.io/AgentLens/>
 
-📝 **Blog:** [AgentLens: Debug Agentforce with Interactive Visualizations](https://developer.salesforce.com/blogs/2026/05/agentlens-debug-agentforce-with-interactive-visualizations) · 🎥 **Video:** [Watch the demo](https://www.youtube.com/watch?v=TZxVNKrx4mU)
+📝 **Blog:** [AgentLens: Debug Agentforce with Interactive Visualizations](https://developer.salesforce.com/blogs/2026/05/agentlens-debug-agentforce-with-interactive-visualizations)
 
 ![AgentLens](images/output.png)
+
+## Watch the Demo
+
+[![AgentLens demo video](https://img.youtube.com/vi/TZxVNKrx4mU/maxresdefault.jpg)](https://www.youtube.com/watch?v=TZxVNKrx4mU)
 
 ## What it does
 
