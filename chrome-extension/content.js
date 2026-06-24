@@ -19,28 +19,12 @@
     return results;
   }
 
-  function findCopyCodeButton() {
-    var buttons = document.querySelectorAll('button');
-    for (var i = 0; i < buttons.length; i++) {
-      var text = buttons[i].textContent.trim();
-      if (text === 'Copy Code' || text === 'Copy code') return buttons[i];
-    }
+  function findAnchorElement() {
+    var anchor = document.querySelector('.session-id-container');
+    if (anchor) return anchor;
 
-    var deepButtons = deepQueryAll(document.body, 'button');
-    for (var j = 0; j < deepButtons.length; j++) {
-      var txt = deepButtons[j].textContent.trim();
-      if (txt === 'Copy Code' || txt === 'Copy code') return deepButtons[j];
-      if (deepButtons[j].getAttribute('aria-label') === 'Copy Code') return deepButtons[j];
-    }
-
-    var lwcButtons = deepQueryAll(document.body, 'lightning-button');
-    for (var k = 0; k < lwcButtons.length; k++) {
-      if (lwcButtons[k].getAttribute('label') === 'Copy Code') {
-        return lwcButtons[k].shadowRoot
-          ? lwcButtons[k].shadowRoot.querySelector('button') || lwcButtons[k]
-          : lwcButtons[k];
-      }
-    }
+    var deepAnchors = deepQueryAll(document.body, '.session-id-container');
+    if (deepAnchors.length) return deepAnchors[0];
 
     return null;
   }
@@ -100,13 +84,16 @@
   function injectButton() {
     if (injected || document.getElementById(BUTTON_ID)) return true;
 
-    var copyBtn = findCopyCodeButton();
-    if (!copyBtn) return false;
+    var anchor = findAnchorElement();
+    if (!anchor) return false;
 
     var agentLensBtn = createAgentLensButton();
-    var parent = copyBtn.parentElement;
+    // Insert after the enclosing span so the button isn't nested inside it
+    // (otherwise the original span's title tooltip would cover our button).
+    var spanAnchor = (anchor.closest && anchor.closest('span')) || anchor;
+    var parent = spanAnchor.parentElement;
     if (parent) {
-      parent.insertBefore(agentLensBtn, copyBtn.nextSibling);
+      parent.insertBefore(agentLensBtn, spanAnchor.nextSibling);
       injected = true;
       return true;
     }
