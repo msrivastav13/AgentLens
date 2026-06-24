@@ -4,7 +4,13 @@ Understand what your Agentforce agent actually did — visually.
 
 **Try it now:** <https://msrivastav13.github.io/AgentLens/>
 
+📝 **Blog:** [AgentLens: Debug Agentforce with Interactive Visualizations](https://developer.salesforce.com/blogs/2026/05/agentlens-debug-agentforce-with-interactive-visualizations)
+
 ![AgentLens](images/output.png)
+
+## Watch the Demo
+
+[![AgentLens demo video](https://img.youtube.com/vi/TZxVNKrx4mU/maxresdefault.jpg)](https://www.youtube.com/watch?v=TZxVNKrx4mU)
 
 ## What it does
 
@@ -33,15 +39,22 @@ AgentLens accepts trace JSON from any of these sources:
 2. Paste or upload a trace JSON from any of the sources above
 3. The first sub agent is auto-selected — step through the trace with arrow keys or the prev/next buttons; handoffs navigate to the next agent automatically
 
-### Chrome Extension [Work in progress]
+### Chrome Extension
+
+**Install from the Chrome Web Store:** [AgentLens](https://chromewebstore.google.com/detail/agentlens/gnlkpnbodhkjaamddkbhgobkgepnjgpa)
+
+Once installed:
+
+1. Navigate to the NGA builder in your Salesforce org
+2. Click **Copy Code** to copy the trace, then click the **Open in AgentLens** button that appears next to it
+3. A new tab opens with the full trace visualization
+
+The extension injects a button directly into the NGA builder UI for one-click trace viewing.
+
+**Install from source (for development):**
 
 1. Open `chrome://extensions` and enable **Developer mode**
 2. Click **Load unpacked** and select the `chrome-extension/` folder
-3. Navigate to the NGA builder in your Salesforce org
-4. Click **Copy Code** to copy the trace, then click the **Open in AgentLens** button that appears next to it
-5. A new tab opens with the full trace visualization
-
-The extension injects a button directly into the NGA builder UI for one-click trace viewing.
 
 ### VS Code Extension
 
