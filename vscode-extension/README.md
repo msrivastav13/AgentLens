@@ -80,4 +80,4 @@ This extension does not add any VS Code settings. It activates automatically whe
 
 ## License
 
-[MIT](https://github.com/msrivastav13/AgentLens/blob/main/LICENSE)
+[Apache License 2.0](https://github.com/msrivastav13/AgentLens/blob/main/LICENSE)

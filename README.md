@@ -1,5 +1,18 @@
 # AgentLens
 
+> [!IMPORTANT]
+> **This repository has been retired and is now archived (read-only).**
+>
+> AgentLens is now open source under Salesforce at **<https://github.com/forcedotcom/AgentLens>**.
+>
+> The project is **still open source and still open to community contributions** — but all future development, issues, pull requests, and releases now happen on the Salesforce repo. Please head there to file issues, contribute, or follow along:
+>
+> 👉 **<https://github.com/forcedotcom/AgentLens>**
+>
+> This repo remains available for historical reference only. Thank you to everyone who contributed here!
+
+---
+
 Understand what your Agentforce agent actually did — visually.
 
 **Try it now:** <https://msrivastav13.github.io/AgentLens/>
@@ -72,4 +85,4 @@ Zero dependencies. Runs entirely in the browser. Works offline. Available as a w
 
 ## License
 
-MIT
+Apache License 2.0
