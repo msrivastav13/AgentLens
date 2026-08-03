@@ -2,13 +2,14 @@
   "name": "agentlens-viewer",
   "displayName": "AgentLens Visualizer",
   "description": "Visualize Agentforce agent execution traces — agent graph, FSM diagrams, and step-by-step inspector.",
-  "version": "0.3.0",
-  "publisher": "MohithShrivastava",
-  "license": "MIT",
+  "version": "0.3.1",
+  "publisher": "msrivastav13",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/msrivastav13/AgentLens"
   },
+  "icon": "images/icon.png",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -26,7 +27,9 @@
         "viewType": "agentlens.traceViewer",
         "displayName": "AgentLens",
         "selector": [
-          { "filenamePattern": "*.json" }
+          {
+            "filenamePattern": "*.json"
+          }
         ],
         "priority": "option"
       }
@@ -65,9 +68,10 @@
     "package": "vsce package"
   },
   "devDependencies": {
-    "@types/vscode": "^1.95.0",
     "@types/node": "^20.0.0",
-    "typescript": "^5.5.0",
-    "@vscode/vsce": "^3.0.0"
+    "@types/vscode": "^1.95.0",
+    "@vscode/vsce": "^3.0.0",
+    "ovsx": "^0.10.11",
+    "typescript": "^5.5.0"
   }
 }
